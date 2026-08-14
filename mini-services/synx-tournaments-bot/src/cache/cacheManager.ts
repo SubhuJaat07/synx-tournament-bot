@@ -27,9 +27,9 @@ export async function preloadCache(): Promise<{
   console.log('🔄 Preloading cache from Supabase...');
   
   try {
-    // Fetch all incomplete games in ONE query
+    // Fetch all incomplete games in ONE query (table: tournament_games)
     const { data: games, error: gamesError } = await supabase
-      .from('games')
+      .from('tournament_games')
       .select('*')
       .in('status', ['waiting', 'in_progress'])
       .order('created_at', { ascending: true });
@@ -48,9 +48,9 @@ export async function preloadCache(): Promise<{
       console.log(`✅ Loaded ${games.length} active game(s) into cache`);
     }
 
-    // Fetch recent interactions for deduplication
+    // Fetch recent interactions for deduplication (table: tournament_interactions)
     const { data: interactions, error: intError } = await supabase
-      .from('interactions')
+      .from('tournament_interactions')
       .select('interaction_id')
       .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
       .limit(1000);
@@ -92,9 +92,9 @@ export async function writeToCacheAndDb(game: CachedGame): Promise<void> {
   // 2. Update Supabase ASYNCHRONOUSLY (non-blocking)
   const dbData = cacheToDb(game);
   
-  // Fire and forget with error handling
+  // Fire and forget with error handling (table: tournament_games)
   supabase
-    .from('games')
+    .from('tournament_games')
     .upsert(dbData, { onConflict: 'id' })
     .then(({ error }) => {
       if (error) {
@@ -114,12 +114,12 @@ export async function createGameInCacheAndDb(game: CachedGame): Promise<CachedGa
   // 1. Add to cache IMMEDIATELY
   gameCache.set(game);
 
-  // 2. Insert to Supabase
+  // 2. Insert to Supabase (table: tournament_games)
   const dbData = cacheToDb(game);
   
   try {
     const { data, error } = await supabase
-      .from('games')
+      .from('tournament_games')
       .insert(dbData)
       .select()
       .single();
@@ -179,7 +179,7 @@ export async function recordChoice(
 
   gameCache.set(updatedGame);
 
-  // 5. Async DB update (non-blocking)
+  // 5. Async DB update (non-blocking) (table: tournament_games)
   const updates: any = {};
   if (isPlayer1) {
     updates.player1_choice = choice;
@@ -192,7 +192,7 @@ export async function recordChoice(
   updates.updated_at = now.toISOString();
 
   supabase
-    .from('games')
+    .from('tournament_games')
     .update(updates)
     .eq('id', gameId)
     .then(({ error }) => {
@@ -235,9 +235,9 @@ export async function completeGameInCacheAndDb(
   // 3. Update cache IMMEDIATELY
   gameCache.set(completedGame);
 
-  // 4. Async DB update
+  // 4. Async DB update (table: tournament_games)
   supabase
-    .from('games')
+    .from('tournament_games')
     .update({
       winner_id: resultData.winnerId || null,
       winner_username: resultData.winnerName || null,

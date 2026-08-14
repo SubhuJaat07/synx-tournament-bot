@@ -24,15 +24,16 @@ console.log(`🔑 Using Supabase ${keyType} key`);
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Test connection
+// Test connection (uses tournament_games table)
 export async function testConnection() {
   try {
-    const { error } = await supabase.from('games').select('id').limit(1);
+    const { error } = await supabase.from('tournament_games').select('id').limit(1);
     if (error && error.code !== 'PGRST116') { // PGRST116 = table doesn't exist yet
       console.warn('⚠️  Supabase connection warning:', error.message);
       return false;
     }
     console.log('✅ Supabase connected successfully');
+    console.log('   Tables: tournament_games, tournament_interactions');
     return true;
   } catch (err) {
     console.error('❌ Supabase connection failed:', err);

@@ -47,10 +47,10 @@ export interface Interaction {
   created_at: string;
 }
 
-// Create a new game
+// Create a new game (table: tournament_games)
 export async function createGame(gameData: Omit<Game, 'id' | 'status' | 'created_at' | 'updated_at'>): Promise<Game | null> {
   const { data, error } = await supabase
-    .from('games')
+    .from('tournament_games')
     .insert([{
       ...gameData,
       status: 'waiting',
@@ -66,10 +66,10 @@ export async function createGame(gameData: Omit<Game, 'id' | 'status' | 'created
   return data;
 }
 
-// Get game by ID
+// Get game by ID (table: tournament_games)
 export async function getGameById(gameId: string): Promise<Game | null> {
   const { data, error } = await supabase
-    .from('games')
+    .from('tournament_games')
     .select('*')
     .eq('id', gameId)
     .single();
@@ -81,10 +81,10 @@ export async function getGameById(gameId: string): Promise<Game | null> {
   return data;
 }
 
-// Get active game in a channel
+// Get active game in a channel (table: tournament_games)
 export async function getActiveGameInChannel(channelId: string): Promise<Game | null> {
   const { data, error } = await supabase
-    .from('games')
+    .from('tournament_games')
     .select('*')
     .eq('channel_id', channelId)
     .in('status', ['waiting', 'in_progress'])
@@ -99,10 +99,10 @@ export async function getActiveGameInChannel(channelId: string): Promise<Game | 
   return data;
 }
 
-// Update game
+// Update game (table: tournament_games)
 export async function updateGame(gameId: string, updates: Partial<Game>): Promise<Game | null> {
   const { data, error } = await supabase
-    .from('games')
+    .from('tournament_games')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', gameId)
     .select()
@@ -115,7 +115,7 @@ export async function updateGame(gameId: string, updates: Partial<Game>): Promis
   return data;
 }
 
-// Record player choice
+// Record player choice (table: tournament_games)
 export async function recordPlayerChoice(
   gameId: string, 
   playerId: string, 
@@ -144,10 +144,10 @@ export async function recordPlayerChoice(
   return await updateGame(gameId, updates);
 }
 
-// Save interaction for restart safety
+// Save interaction for restart safety (table: tournament_interactions)
 export async function saveInteraction(interactionData: Omit<Interaction, 'id' | 'processed' | 'created_at'>): Promise<Interaction | null> {
   const { data, error } = await supabase
-    .from('interactions')
+    .from('tournament_interactions')
     .insert([interactionData])
     .select()
     .single();
@@ -159,10 +159,10 @@ export async function saveInteraction(interactionData: Omit<Interaction, 'id' | 
   return data;
 }
 
-// Mark interaction as processed
+// Mark interaction as processed (table: tournament_interactions)
 export async function markInteractionProcessed(interactionId: string): Promise<void> {
   const { error } = await supabase
-    .from('interactions')
+    .from('tournament_interactions')
     .update({ 
       processed: true, 
       processed_at: new Date().toISOString() 
@@ -174,10 +174,10 @@ export async function markInteractionProcessed(interactionId: string): Promise<v
   }
 }
 
-// Check if interaction was already processed
+// Check if interaction was already processed (table: tournament_interactions)
 export async function isInteractionProcessed(interactionId: string): Promise<boolean> {
   const { data, error } = await supabase
-    .from('interactions')
+    .from('tournament_interactions')
     .select('processed')
     .eq('interaction_id', interactionId)
     .single();
@@ -188,10 +188,10 @@ export async function isInteractionProcessed(interactionId: string): Promise<boo
   return data.processed;
 }
 
-// Get unprocessed interactions after restart
+// Get unprocessed interactions after restart (table: tournament_interactions)
 export async function getUnprocessedInteractions(): Promise<Interaction[]> {
   const { data, error } = await supabase
-    .from('interactions')
+    .from('tournament_interactions')
     .select('*')
     .eq('processed', false)
     .order('created_at', { ascending: true });
@@ -203,7 +203,7 @@ export async function getUnprocessedInteractions(): Promise<Interaction[]> {
   return data || [];
 }
 
-// Complete game with results
+// Complete game with results (table: tournament_games)
 export async function completeGame(
   gameId: string, 
   resultData: {
@@ -221,7 +221,7 @@ export async function completeGame(
   });
 }
 
-// Cancel game
+// Cancel game (table: tournament_games)
 export async function cancelGame(gameId: string): Promise<Game | null> {
   return await updateGame(gameId, {
     status: 'cancelled',
@@ -229,10 +229,10 @@ export async function cancelGame(gameId: string): Promise<Game | null> {
   });
 }
 
-// Get all incomplete games (for restart recovery)
+// Get all incomplete games for restart recovery (table: tournament_games)
 export async function getIncompleteGames(): Promise<Game[]> {
   const { data, error } = await supabase
-    .from('games')
+    .from('tournament_games')
     .select('*')
     .in('status', ['waiting', 'in_progress'])
     .order('created_at', { ascending: true });
