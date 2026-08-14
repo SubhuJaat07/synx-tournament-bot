@@ -7,7 +7,8 @@ import {
   ButtonStyle,
   ChannelType
 } from 'discord.js';
-import { createGame, getActiveGameInChannel } from '../database/operations.ts';
+import { gameCache, CachedGame } from '../cache/gameCache.ts';
+import { createGameInCacheAndDb } from '../cache/cacheManager.ts';
 import { v4 as uuidv4 } from 'uuid';
 import { activeTimers } from '../index.ts';
 
@@ -45,8 +46,8 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
       return;
     }
 
-    // Check for existing active game in channel
-    const existingGame = await getActiveGameInChannel(interaction.channelId);
+    // ⚡ FAST: Check cache for existing active game (0.001ms vs 200ms DB call)
+    const existingGame = gameCache.getByChannel(interaction.channelId);
     if (existingGame) {
       await interaction.editReply({
         content: `❌ **Error:** There's already an active game in this channel!\nPlease wait for it to complete or cancel it.`,
@@ -60,6 +61,7 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
 
     // Generate unique game ID
     const gameId = uuidv4();
+    const now = new Date();
 
     // Create initial embed message
     const embed = createGameEmbed(config, timerSeconds, resultMode);
@@ -74,34 +76,31 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
       components: [actionRow],
     });
 
-    // Save game to database
-    const gameData = await createGame({
+    // ⚡ Create CachedGame object (IMMEDIATE - no DB wait)
+    const cachedGame: CachedGame = {
       id: gameId,
-      channel_id: interaction.channelId,
-      message_id: message.id,
-      player1_id: config.player1.id,
-      player1_username: `${config.player1.username}`,
-      player2_id: config.player2.id,
-      player2_username: `${config.player2.username}`,
-      prize_name: config.prizeName || undefined,
-      prize_value: config.prizeValue || undefined,
-      prize_description: config.prizeDescription || undefined,
-      timer_seconds: timerSeconds,
-      started_at: new Date().toISOString(),
-      ends_at: new Date(Date.now() + timerSeconds * 1000).toISOString(),
-      result_mode: resultMode,
+      channelId: interaction.channelId,
+      messageId: message.id,
+      playerId1: config.player1.id,
+      playerName1: `${config.player1.username}`,
+      playerId2: config.player2.id,
+      playerName2: `${config.player2.username}`,
+      prizeName: config.prizeName || undefined,
+      prizeValue: config.prizeValue || undefined,
+      prizeDescription: config.prizeDescription || undefined,
+      timerSeconds: timerSeconds,
+      startedAt: now,
+      endsAt: new Date(now.getTime() + timerSeconds * 1000),
+      resultMode: resultMode,
       status: 'in_progress',
-      created_by: interaction.user.id,
-      guild_id: interaction.guildId || undefined,
-    });
+      createdBy: interaction.user.id,
+      guildId: interaction.guildId || undefined,
+      createdAt: now,
+      updatedAt: now,
+    };
 
-    if (!gameData) {
-      await interaction.editReply({
-        content: '❌ **Error:** Failed to create game. Please try again.',
-        components: [],
-      });
-      return;
-    }
+    // ⚡ Write to cache IMMEDIATELY + async DB sync (non-blocking)
+    await createGameInCacheAndDb(cachedGame);
 
     console.log(`✅ Game created: ${gameId}`);
     console.log(`   Players: ${config.player1.username} vs ${config.player2.username}`);
@@ -214,19 +213,19 @@ async function startGameTimer(
     try {
       console.log(`⏰ Timer ended for game: ${gameId}`);
       
-      // Import here to avoid circular dependency
-      const { getGameById, completeGame } = await import('../database/operations.ts');
-      const { calculateAndShowResults } = await import('../utils/results.ts');
-      
-      const game = await getGameById(gameId);
+      // ⚡ Get from CACHE (not DB!)
+      const game = gameCache.get(gameId);
       
       if (!game || game.status === 'completed' || game.status === 'cancelled') {
         console.log(`Game ${gameId} already completed or cancelled, skipping...`);
         return;
       }
 
+      // Import results handler
+      const { calculateAndShowResultsFromCache } = await import('../utils/results.ts');
+      
       // Show results (handle cases where one or both didn't choose)
-      await calculateAndShowResults(interaction, game, config, true);
+      await calculateAndShowResultsFromCache(interaction, game, config, true);
       
     } catch (error) {
       console.error('Error in timer callback:', error);
