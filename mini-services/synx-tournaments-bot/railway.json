@@ -1,0 +1,1 @@
+{"$schema": "https://railway.app/railway.schema.json", "railwayup_name": "synx-tournaments-bot", "build": {"builder": "NIXPACKS"}, "deploy": {"start_command": "bun run src/index.ts", "restart_policy_type": "ON_FAILURE", "restart_policy_max_retries": 10}}

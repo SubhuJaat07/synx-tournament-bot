@@ -1,0 +1,50 @@
+# Dependencies (installed separately)
+node_modules/
+
+# Environment files (should be set in Railway)
+.env
+.env.local
+.env.production
+
+# Git files
+.git
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed in container)
+README.md
+ARCHITECTURE.md
+benchmark.ts
+setup.sh
+
+# Test files (if any)
+__tests__/
+*.test.ts
+*.spec.ts
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Misc
+.tmp/
+.temp/
+.cache/

@@ -1,0 +1,15 @@
+# Nixpacks Configuration for Railway
+# This tells Railway how to build and run the bot
+
+[phases.build]
+cmds = ['bun install --frozen-lockfile']
+
+[phases.start]
+cmd = 'bun run src/index.ts'
+
+[variables]
+NODE_ENV = 'production'
+PORT = '3000'
+
+[build.env]
+NODE_VERSION = '20'
