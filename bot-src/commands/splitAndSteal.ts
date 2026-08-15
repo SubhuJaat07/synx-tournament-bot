@@ -159,16 +159,11 @@ function createGameEmbed(config: GameConfig, timerSeconds: number, resultMode: s
     ? `\n📝 ${config.prizeDescription}`
     : '';
 
-  const modeText = resultMode === 'both_clicked' 
-    ? '⚡ Results when both choose'
-    : '⏱️ Timer running...';
-
   return new EmbedBuilder()
     .setColor(0x00ff88)
     .setTitle('🎮 Split & Steal Tournament')
     .setDescription(
-      `**Choose your fate!**${prizeInfo}${prizeDesc}\n\n` +
-      `${modeText}`
+      `**Choose your fate!**${prizeInfo}${prizeDesc}`
     )
     .addFields(
       {
