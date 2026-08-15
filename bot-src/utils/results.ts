@@ -273,40 +273,16 @@ function createResultsEmbedFromCache(
     historyText = timeline.join('\n');
   }
 
-  // Build CLEAN result embed - only choices + timeline!
+  // Build MINIMAL result embed - ONLY TIMELINE!
   const embed = new EmbedBuilder()
     .setColor(color)
     .setTitle(`${result.emoji} Game Over!`)
-    .addFields(
-      {
-        name: `<@${game.playerId1}>`,
-        value: p1ChoiceText,
-        inline: true,
-      },
-      {
-        name: `<@${game.playerId2}>`,
-        value: p2ChoiceText,
-        inline: true,
-      }
-    );
-
-  // Add winner field only if there's a winner
-  if (result.winner_id) {
-    embed.addFields({
-      name: '🏆 Winner',
-      value: `<@${result.winner_id}> takes all!`,
+    .addFields({
+      name: '📜 Choice Timeline',
+      value: historyText,
       inline: false,
-    });
-  }
-
-  // Add FULL choice history timeline (with all changes!)
-  embed.addFields({
-    name: '📜 Choice Timeline',
-    value: historyText,
-    inline: false,
-  });
-
-  embed.setFooter({ text: 'Synx Tournaments' })
+    })
+    .setFooter({ text: 'Synx Tournaments' })
     .setTimestamp(new Date());
 
   return embed;
