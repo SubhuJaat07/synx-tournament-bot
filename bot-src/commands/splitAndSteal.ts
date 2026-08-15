@@ -273,8 +273,8 @@ async function startLiveCountdown(
       const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
       
       // Get player status (secret!)
-      const p1Status = game.choice1 ? '✅ **Chosen!** 🤫' : '⏳ Waiting...';
-      const p2Status = game.choice2 ? '✅ **Chosen!** 🤫' : '⏳ Waiting...';
+      const p1Status = game.choice1 ? '✅' : '⏳';
+      const p2Status = game.choice2 ? '✅' : '⏳';
       const choiceCount = (game.choice1 ? 1 : 0) + (game.choice2 ? 1 : 0);
 
       // Create updated embed with live timer

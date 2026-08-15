@@ -209,8 +209,8 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
     
     // DON'T reveal choices! Just show if they chose or not (compact format)
-    const p1Status = game.choice1 ? '✅ **Chosen!** 🤫' : '⏳ Waiting...';
-    const p2Status = game.choice2 ? '✅ **Chosen!** 🤫' : '⏳ Waiting...';
+    const p1Status = game.choice1 ? '✅' : '⏳';
+    const p2Status = game.choice2 ? '✅' : '⏳';
 
     // Count how many choices recorded
     const choiceCount = (game.choice1 ? 1 : 0) + (game.choice2 ? 1 : 0);
