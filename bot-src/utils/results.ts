@@ -57,7 +57,7 @@ export function calculateResultFromCache(game: CachedGame): GameResult {
         result_type: 'no_choice_steal',
         player1_prize_share: 0,
         player2_prize_share: 100,
-        description: `🏆 <@${game.playerId2}> wins by default! <@${game.playerId1}> **didn't choose anything**.`,
+        description: `🏆 <@${game.playerId2}> stole everything! <@${game.playerId1}> **didn't choose anything**.`,
         emoji: '🏆',
       };
     } else {
@@ -82,7 +82,7 @@ export function calculateResultFromCache(game: CachedGame): GameResult {
         result_type: 'steal_no_choice',
         player1_prize_share: 100,
         player2_prize_share: 0,
-        description: `🏆 <@${game.playerId1}> wins by default! <@${game.playerId2}> **didn't choose anything**.`,
+        description: `🏆 <@${game.playerId1}> stole everything! <@${game.playerId2}> **didn't choose anything**.`,
         emoji: '🏆',
       };
     } else {
@@ -356,7 +356,7 @@ function createAnnouncementMessageFromCache(game: CachedGame, result: GameResult
       return `⏰ **Time's up!** Neither **<@${game.playerId1}>** nor **<@${game.playerId2}>** made a choice! 😴 Everyone was sleeping on the job! **${prizeDisplay}** carries over to next tournament!`;
     
     case 'no_choice_steal':
-      return `🏆 **<@${game.playerId2}>** takes **${prizeDisplay}** by default!\n\n⚠️ **<@${game.playerId1}>** didn't choose anything - auto-forfeit!`;
+      return `🏆 **<@${game.playerId2}>** stole **${prizeDisplay}**!\n\n⚠️ **<@${game.playerId1}>** didn't choose anything - auto-forfeit!`;
     
     case 'no_choice_split': {
       const halfPrize = calculatePrizeShare(game.prizeValue, 50) + (game.prizeName ? ` ${game.prizeName}` : '');
@@ -365,7 +365,7 @@ function createAnnouncementMessageFromCache(game: CachedGame, result: GameResult
     }
     
     case 'steal_no_choice':
-      return `🏆 **<@${game.playerId1}>** takes **${prizeDisplay}** by default!\n\n⚠️ **<@${game.playerId2}>** didn't choose anything - auto-forfeit!`;
+      return `🏆 **<@${game.playerId1}>** stole **${prizeDisplay}**!\n\n⚠️ **<@${game.playerId2}>** didn't choose anything - auto-forfeit!`;
     
     case 'split_no_choice': {
       const halfPrize = calculatePrizeShare(game.prizeValue, 50) + (game.prizeName ? ` ${game.prizeName}` : '');
