@@ -19,14 +19,14 @@ export async function handleButtonInteraction(interaction: ButtonInteraction, cl
   const startTime = performance.now();
   const customId = interaction.customId;
   
-  // Parse button custom ID format: action_gameId_player (e.g., split_uuid_p1)
+  // Parse button custom ID format: action_gameId (e.g., split_uuid)
   const parts = customId.split('_');
-  if (parts.length !== 3) {
+  if (parts.length !== 2) {
     await interaction.reply({ content: '❌ Invalid button interaction!', ephemeral: true });
     return;
   }
 
-  const [action, gameId, player] = parts;
+  const [action, gameId] = parts;
   
   // Validate action
   if (!['split', 'steal'].includes(action)) {
@@ -69,26 +69,29 @@ export async function handleButtonInteraction(interaction: ButtonInteraction, cl
       return;
     }
 
-    // Validate player (from cached data)
+    // Validate player (from cached data) - detect which player based on user ID
     let playerId: string;
     let playerName: string;
+    let isPlayer1 = false;
 
-    if (player === 'p1' && interaction.user.id === game.playerId1) {
+    if (interaction.user.id === game.playerId1) {
       playerId = game.playerId1;
       playerName = game.playerName1;
-    } else if (player === 'p2' && interaction.user.id === game.playerId2) {
+      isPlayer1 = true;
+    } else if (interaction.user.id === game.playerId2) {
       playerId = game.playerId2;
       playerName = game.playerName2;
+      isPlayer1 = false;
     } else {
       await interaction.followUp({ 
-        content: `❌ **Hey <@${interaction.user.id}>**, this button is not for you!\nOnly **${player === 'p1' ? game.playerName1 : game.playerName2}** can click this button.`, 
+        content: `❌ **Hey <@${interaction.user.id}>**, you're not a player in this game!\nOnly **${game.playerName1}** and **${game.playerName2}** can play.`, 
         ephemeral: true 
       });
       return;
     }
 
     // Check if player already chose (from cache)
-    const existingChoice = player === 'p1' ? game.choice1 : game.choice2;
+    const existingChoice = isPlayer1 ? game.choice1 : game.choice2;
     if (existingChoice) {
       await interaction.followUp({ 
         content: `⚠️ **${playerName}**, you've already chosen **${existingChoice.toUpperCase()}**!\nYou cannot change your choice.`, 

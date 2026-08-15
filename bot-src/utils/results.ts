@@ -173,7 +173,7 @@ export async function calculateAndShowResultsFromCache(
     const embed = createResultsEmbedFromCache(game, config, result, isTimerExpiry);
 
     // Update the original message with results and remove buttons
-    const message = interaction.isButtonInteraction() 
+    const message = interaction.isButton() 
       ? interaction.message 
       : await interaction.fetchReply();
 
@@ -194,7 +194,7 @@ export async function calculateAndShowResultsFromCache(
     console.error('Error showing results:', error);
     
     try {
-      if (interaction.isButtonInteraction()) {
+      if (interaction.isButton()) {
         await interaction.followUp({
           content: '❌ **Error:** Failed to show results. Please check bot logs.',
           ephemeral: true,
@@ -418,7 +418,7 @@ export async function calculateAndShowResults(
     const embed = createResultsEmbedDB(game, config, result, isTimerExpiry);
 
     // Update the original message with results and remove buttons
-    const message = interaction.isButtonInteraction() 
+    const message = interaction.isButton() 
       ? interaction.message 
       : await interaction.fetchReply();
 
@@ -439,7 +439,7 @@ export async function calculateAndShowResults(
     console.error('Error showing results:', error);
     
     try {
-      if (interaction.isButtonInteraction()) {
+      if (interaction.isButton()) {
         await interaction.followUp({
           content: '❌ **Error:** Failed to show results. Please check bot logs.',
           ephemeral: true,

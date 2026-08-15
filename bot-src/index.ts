@@ -11,7 +11,8 @@ dotenv.config();
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_ID = process.env.GUILD_ID;
+// Support multiple guilds (comma-separated)
+const GUILD_IDS = process.env.GUILD_ID?.split(',').map(g => g.trim()).filter(Boolean) || [];
 
 if (!TOKEN) {
   console.error('❌ DISCORD_TOKEN not found in environment variables');
@@ -99,7 +100,7 @@ client.on('interactionCreate', async (interaction) => {
       }
     }
 
-    if (interaction.isButtonInteraction()) {
+    if (interaction.isButton()) {
       await handleButtonInteraction(interaction, client);
     }
     
@@ -170,11 +171,9 @@ async function registerCommands() {
         },
         {
           name: 'timer',
-          description: 'Timer duration in seconds (default: 60)',
-          type: 4, // INTEGER type
+          description: 'Timer duration (e.g., 30s, 2m, 1h, 1d). Default: 60s',
+          type: 3, // STRING type (for flexible formats!)
           required: false,
-          min_value: 10,
-          max_value: 300,
         },
         {
           name: 'result_mode',
@@ -199,13 +198,15 @@ async function registerCommands() {
   try {
     console.log('📝 Registering slash commands...');
     
-    if (GUILD_ID) {
-      // Guild-specific commands (faster updates during development)
-      await rest.put(
-        Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-        { body: commands }
-      );
-      console.log(`✅ Commands registered for guild: ${GUILD_ID}`);
+    if (GUILD_IDS.length > 0) {
+      // Register for multiple guilds (comma-separated support)
+      for (const guildId of GUILD_IDS) {
+        await rest.put(
+          Routes.applicationGuildCommands(CLIENT_ID, guildId),
+          { body: commands }
+        );
+        console.log(`✅ Commands registered for guild: ${guildId}`);
+      }
     } else {
       // Global commands
       await rest.put(
@@ -219,38 +220,13 @@ async function registerCommands() {
   }
 }
 
-// Help command handler
+// Help command handler (SHORT version!)
 async function handleHelpCommand(interaction: any) {
   const helpEmbed = {
     color: 0x00ff88,
-    title: '🎮 Synx Tournaments - Help',
-    description: 'Welcome to **Split & Steal** game bot! Here are the available commands:',
-    fields: [
-      {
-        name: '`/splitandsteal`',
-        value: 'Start a new Split & Steal game\n**Required:** Player 1, Player 2\n**Optional:** Prize Name, Value, Description, Timer (10-300s), Result Mode',
-        inline: false,
-      },
-      {
-        name: '🎯 How to Play',
-        value: '1. Use `/splitandsteal` with two players\n2. Each player chooses **SPLIT** or **STEAL**\n3. Results depend on both choices:\n   • ✅ Both SPLIT → 50-50 split!\n   • ❌ Both STEAL → Nobody wins!\n   • 🏆 One Splits, one Steals → Stealer takes ALL!',
-        inline: false,
-      },
-      {
-        name: '⏱️ Timer Modes',
-        value: '**After Timer Ends:** Results shown when timer expires\n**When Both Click:** Results shown as soon as both players choose',
-        inline: false,
-      },
-      {
-        name: '💡 Tips',
-        value: '• Trust your opponent... or don\'t!\n• The choice is yours: cooperate or betray\n• Games are saved even if bot restarts!',
-        inline: false,
-      },
-    ],
-    footer: {
-      text: 'Synx Tournaments © 2024 | Made with ❤️',
-    },
-    timestamp: new Date().toISOString(),
+    title: '🎮 Synx Tournaments',
+    description: '**Split & Steal** Tournament Bot\n\n`/splitandsteal @player1 @player2 [timer: 60s]`\n\n✅ Both Split → 50-50\n❌ Both SteAL → 0-0\n🏆 One Steals → Takes ALL!',
+    footer: { text: 'Timer formats: 30s, 2m, 1h, 1d | No limits!' },
   };
 
   await interaction.reply({ embeds: [helpEmbed], ephemeral: true });
