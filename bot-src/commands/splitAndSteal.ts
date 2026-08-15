@@ -280,8 +280,8 @@ async function startLiveCountdown(
         const empty = '░'.repeat(10 - progress);
         progressBar = `\n\`${filled}${empty}\` **${timeRemaining}s**`;
         timerText = `⚡ **${timeDisplay} remaining**${progressBar}`;
-        // 🎬 User's 30-second countdown animation on RIGHT side!
-        thumbnailUrl = 'https://media.giphy.com/media/hJwGeT4iFhGIPLNlbk/giphy.gif';
+        // ⏱️ Abstract timer animation (NOT countdown - avoids looping confusion!)
+        thumbnailUrl = 'https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif';
       } else if (timeRemaining <= 10 && timeRemaining > 5) {
         // 🔥 Last 10s-6s - Red urgent + fire animation on RIGHT!
         embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xff3333;
@@ -309,8 +309,8 @@ async function startLiveCountdown(
         }
       }
 
-      // 👥 Player names in description (NO fields = NO blank lines!)
-      const playerLine = `👤 **${game.playerName1}** ${p1Status}  |  **${game.playerName2}** ${p2Status}`;
+      // 👥 Player names on SEPARATE lines in description
+      const playerLines = `👤 **${game.playerName1}** ${p1Status}\n👤 **${game.playerName2}** ${p2Status}`;
 
       // Create updated embed with live timer (timer in content, not footer!)
       const liveEmbed = new EmbedBuilder()
@@ -318,7 +318,7 @@ async function startLiveCountdown(
         .setTitle('🎮 Split & Steal - In Progress')
         .setThumbnail(thumbnailUrl) // ✅ Animated GIF thumbnail!
         .setDescription(
-          `${prizeText}${prizeText ? '\n\n' : ''}${playerLine}\n\n${timerText}`.trim()
+          `${prizeText}${prizeText ? '\n\n' : ''}${playerLines}\n\n${timerText}`.trim()
         )
         .setFooter({ text: 'Synx Tournaments' })
         .setTimestamp(new Date());

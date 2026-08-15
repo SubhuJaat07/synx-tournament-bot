@@ -228,14 +228,14 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     let thumbnailUrl: string | null = null;
     
     if (timeRemaining <= 30 && timeRemaining > 10) {
-      // ⏱️ Last 30s-16s - User's custom 30s countdown GIF on RIGHT!
+      // ⏱️ Abstract timer animation (NOT countdown - avoids looping confusion!)
       embedColor = 0xffcc00;
       const progress = Math.floor((timeRemaining / 30) * 10);
       const filled = '█'.repeat(progress);
       const empty = '░'.repeat(10 - progress);
       timerText = `⚡ **${timeDisplay} remaining**\n\`${filled}${empty}\` **${timeRemaining}s**`;
-      // 🎬 User's 30-second countdown animation on RIGHT side!
-      thumbnailUrl = 'https://media.giphy.com/media/hJwGeT4iFhGIPLNlbk/giphy.gif';
+      // Clock animation (loops naturally, no confusing numbers!)
+      thumbnailUrl = 'https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif';
     } else if (timeRemaining <= 10 && timeRemaining > 5) {
       embedColor = 0xff0000;
       const progress = Math.floor((timeRemaining / 10) * 10);
@@ -259,15 +259,15 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       }
     }
 
-    // 👥 Player names in description (NO fields = NO blank lines!)
-    const playerLine = `👤 **${game.playerName1}** ${p1Status}  |  **${game.playerName2}** ${p2Status}`;
+    // 👥 Player names on SEPARATE lines in description
+    const playerLines = `👤 **${game.playerName1}** ${p1Status}\n👤 **${game.playerName2}** ${p2Status}`;
 
     const embed = new EmbedBuilder()
       .setColor(embedColor)
       .setTitle('🎮 Split & Steal - In Progress')
       .setThumbnail(thumbnailUrl)
       .setDescription(
-        `${prizeText}${prizeText ? '\n\n' : ''}${playerLine}\n\n${timerText}`.trim()
+        `${prizeText}${prizeText ? '\n\n' : ''}${playerLines}\n\n${timerText}`.trim()
       )
       .setFooter({ text: 'Synx Tournaments' })
       .setTimestamp(new Date());
