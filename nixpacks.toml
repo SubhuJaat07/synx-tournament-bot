@@ -1,0 +1,15 @@
+# Nixpacks Configuration for Railway
+# Deploys Synx Tournaments Bot from subfolder
+
+[phases.build]
+cmds = ['cd mini-services/synx-tournaments-bot && bun install --frozen-lockfile']
+
+[phases.start]
+cmd = 'cd mini-services/synx-tournaments-bot && bun run src/index.ts'
+
+[variables]
+NODE_ENV = 'production'
+PORT = '3000'
+
+[build.env]
+NODE_VERSION = '20'

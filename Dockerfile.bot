@@ -1,0 +1,39 @@
+# Synx Tournaments Bot - Root Dockerfile
+# Builds from mini-services/synx-tournaments-bot/
+
+FROM oven/bun:1-slim AS builder
+
+WORKDIR /app
+
+# Copy bot package files
+COPY mini-services/synx-tournaments-bot/package.json mini-services/synx-tournaments-bot/bun.lock ./
+
+# Install dependencies
+RUN bun install --frozen-lockfile --production=false
+
+# Copy bot source code
+COPY mini-services/synx-tournaments-bot/src ./src
+COPY mini-services/synx-tournaments-bot/tsconfig.json ./
+COPY mini-services/synx-tournaments-bot/database ./database
+
+# Production stage
+FROM oven/bun:1-slim AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOST=0.0.0.0
+
+# Copy from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app/database ./database
+COPY mini-services/synx-tournaments-bot/package.json ./
+COPY mini-services/synx-tournaments-bot/bun.lock ./
+
+EXPOSE 3000
+
+# Start the bot
+CMD ["bun", "run", "src/index.ts"]
