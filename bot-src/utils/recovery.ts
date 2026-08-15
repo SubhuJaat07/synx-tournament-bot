@@ -181,18 +181,8 @@ async function recoverGameFromCache(
 
   activeTimers.set(game.id, timer);
 
-  // Notify channel about recovery (optional - can be noisy)
-  try {
-    const channel = await client.channels.fetch(game.channelId).catch(() => null);
-    if (channel && 'send' in channel) {
-      await channel.send({
-        content: `🔄 **Bot Restarted!**\nThe Split & Steal game between <@${game.playerId1}> and <@${game.playerId2}> is still active!\n⏱️ **${remainingSeconds} seconds** remaining.`,
-        embeds: [createRecoveryStatusEmbed(game)],
-      });
-    }
-  } catch (notifyError) {
-    console.error(`Failed to notify about recovery for game ${game.id}:`, notifyError);
-  }
+  // Silent recovery - NO message to users (they won't even notice!)
+  console.log(`🔄 Game ${game.id} silently recovered - ${remainingSeconds}s remaining`);
 }
 
 function createRecoveryStatusEmbed(game: CachedGame): EmbedBuilder {
