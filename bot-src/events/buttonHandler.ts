@@ -221,12 +221,33 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
 
     // Count how many choices recorded
     const choiceCount = (game.choice1 ? 1 : 0) + (game.choice2 ? 1 : 0);
+    
+    // 🎨 Animated countdown for button handler too!
+    let embedColor = 0xffaa00;
+    let timerText = `⏳ **${timeDisplay} remaining**`;
+    
+    if (timeRemaining <= 30 && timeRemaining > 10) {
+      embedColor = 0xffcc00;
+      const progress = Math.floor((timeRemaining / 30) * 10);
+      const filled = '█'.repeat(progress);
+      const empty = '░'.repeat(10 - progress);
+      timerText = `⚡ **${timeDisplay} remaining**\n\`${filled}${empty}\` **${timeRemaining}s**`;
+    } else if (timeRemaining <= 10 && timeRemaining > 5) {
+      embedColor = 0xff0000;
+      const progress = Math.floor((timeRemaining / 10) * 10);
+      const filled = '🔴'.repeat(Math.ceil(progress / 2));
+      const empty = '⬜'.repeat(5 - Math.ceil(progress / 2));
+      timerText = `🔥 **${timeDisplay} remaining**\n${filled}${empty} **${timeRemaining}s**`;
+    } else if (timeRemaining <= 5) {
+      embedColor = 0xff0000;
+      timerText = `⏰ **${timeDisplay}**\n💀💀💀💀💀 **${timeRemaining}** 💀💀💀💀💀`;
+    }
 
     const embed = new EmbedBuilder()
-      .setColor(0xffaa00)
+      .setColor(embedColor)
       .setTitle('🎮 Split & Steal - In Progress')
       .setDescription(
-        `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}\n\n⏳ **${timeDisplay} remaining**`.trim()
+        `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}\n\n${timerText}`.trim()
       )
       .addFields(
         {

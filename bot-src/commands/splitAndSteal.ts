@@ -287,13 +287,42 @@ async function startLiveCountdown(
       const p1Status = game.choice1 ? '✅' : '⏳';
       const p2Status = game.choice2 ? '✅' : '⏳';
       const choiceCount = (game.choice1 ? 1 : 0) + (game.choice2 ? 1 : 0);
+      
+      // 🎨 ANIMATED COUNTDOWN - Last 30 seconds special effects!
+      const totalTimer = game.timerSeconds || 60;
+      let embedColor = 0xffaa00; // Default orange
+      let timerText = `⏳ **${timeDisplay} remaining**`;
+      let progressBar = '';
+      
+      if (timeRemaining <= 30 && timeRemaining > 10) {
+        // ⚡ Last 30s - Yellow warning + progress bar
+        embedColor = 0xffcc00;
+        const progress = Math.floor((timeRemaining / 30) * 10);
+        const filled = '█'.repeat(progress);
+        const empty = '░'.repeat(10 - progress);
+        progressBar = `\n\`${filled}${empty}\` **${timeRemaining}s**`;
+        timerText = `⚡ **${timeDisplay} remaining**${progressBar}`;
+      } else if (timeRemaining <= 10) {
+        // 🔥 Last 10s - Red urgent + animated pulse effect!
+        embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xff3333;
+        const progress = Math.floor((timeRemaining / 10) * 10);
+        const filled = '🔴'.repeat(Math.ceil(progress / 2));
+        const empty = '⬜'.repeat(5 - Math.ceil(progress / 2));
+        progressBar = `\n${filled}${empty} **${timeRemaining}s**`;
+        timerText = `🔥 **${timeDisplay} remaining**${progressBar}`;
+      } else if (timeRemaining <= 5) {
+        // 💀 Last 5s - Critical! Flashing red!
+        embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xaa0000;
+        progressBar = `\n💀💀💀💀💀 **${timeRemaining}** 💀💀💀💀💀`;
+        timerText = `⏰ **${timeDisplay}**${progressBar}`;
+      }
 
       // Create updated embed with live timer (timer in content, not footer!)
       const liveEmbed = new EmbedBuilder()
-        .setColor(0xffaa00)
+        .setColor(embedColor)
         .setTitle('🎮 Split & Steal - In Progress')
         .setDescription(
-          `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}\n\n⏳ **${timeDisplay} remaining**`.trim()
+          `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}\n\n${timerText}`.trim()
         )
         .addFields(
           {
