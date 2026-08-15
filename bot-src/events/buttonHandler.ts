@@ -222,10 +222,9 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     // Count how many choices recorded
     const choiceCount = (game.choice1 ? 1 : 0) + (game.choice2 ? 1 : 0);
     
-    // 🎨 Animated countdown for button handler too - RIGHT SIDE GIF!
+    // 🎨 Animated countdown - Color urgency changes, but SAME GIF always!
     let embedColor = 0xffaa00;
     let timerText = `⏳ **${timeDisplay} remaining**`;
-    let thumbnailUrl: string | null = null;
     
     // ❤️ Select ONE heartbeat GIF based on game ID (consistent for same game!)
     const heartbeatGifs = [
@@ -241,27 +240,29 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     const gifIndex = game.id.charCodeAt(0) % heartbeatGifs.length;
     const selectedHeartbeatGif = heartbeatGifs[gifIndex];
     
-    if (timeRemaining <= 30 && timeRemaining > 10) {
-      // ⏱️ Heartbeat animation (SAME GIF every time for this game!)
+    // Color intensity based on time (NO GIF switching!)
+    if (timeRemaining <= 5) {
+      // 💀 Last 5s-1s - Critical red!
+      embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xaa0000;
+      timerText = `⏰ **${timeDisplay}**\n💀💀💀💀💀 **${timeRemaining}** 💀💀💀💀💀`;
+    } else if (timeRemaining <= 10) {
+      // 🔥 Last 10s-6s - Urgent red/orange
+      embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xff3333;
+      const progress = Math.floor((timeRemaining / 10) * 10);
+      const filled = '🔴'.repeat(Math.ceil(progress / 2));
+      const empty = '⬜'.repeat(5 - Math.ceil(progress / 2));
+      timerText = `🔥 **${timeDisplay} remaining**\n${filled}${empty} **${timeRemaining}s**`;
+    } else if (timeRemaining <= 30) {
+      // ⚡ Last 30s-11s - Warning yellow
       embedColor = 0xffcc00;
       const progress = Math.floor((timeRemaining / 30) * 10);
       const filled = '█'.repeat(progress);
       const empty = '░'.repeat(10 - progress);
       timerText = `⚡ **${timeDisplay} remaining**\n\`${filled}${empty}\` **${timeRemaining}s**`;
-      // ❤️ Use CONSISTENT GIF (based on game ID, not random!)
-      thumbnailUrl = selectedHeartbeatGif;
-    } else if (timeRemaining <= 10 && timeRemaining > 5) {
-      embedColor = 0xff0000;
-      const progress = Math.floor((timeRemaining / 10) * 10);
-      const filled = '🔴'.repeat(Math.ceil(progress / 2));
-      const empty = '⬜'.repeat(5 - Math.ceil(progress / 2));
-      timerText = `🔥 **${timeDisplay} remaining**\n${filled}${empty} **${timeRemaining}s**`;
-      thumbnailUrl = 'https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif'; // 🔥 Fire on RIGHT
-    } else if (timeRemaining <= 5) {
-      embedColor = 0xff0000;
-      timerText = `⏰ **${timeDisplay}**\n💀💀💀💀💀 **${timeRemaining}** 💀💀💀💀💀`;
-      thumbnailUrl = 'https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif'; // 💀 Danger on RIGHT
     }
+    
+    // ❤️ Use SAME heartbeat GIF for ENTIRE countdown (no switching!)
+    const thumbnailUrl = selectedHeartbeatGif;
 
     // 🎯 Build prize display - ONLY if prize exists!
     let prizeText = '';
@@ -276,15 +277,32 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     // 👥 Player names on SEPARATE lines in description
     const playerLines = `👤 **${game.playerName1}** ${p1Status}\n👤 **${game.playerName2}** ${p2Status}`;
 
-    const embed = new EmbedBuilder()
-      .setColor(embedColor)
-      .setTitle('🎮 Split & Steal - In Progress')
-      .setThumbnail(thumbnailUrl)
-      .setDescription(
-        `${prizeText}${prizeText ? '\n\n' : ''}${playerLines}\n\n${timerText}`.trim()
-      )
-      .setFooter({ text: 'Synx Tournaments' })
-      .setTimestamp(new Date());
+    // 🛡️ ERROR HANDLING: Try with GIF first, fallback without if fails
+    let embed: EmbedBuilder;
+    
+    try {
+      // ✅ Try WITH heartbeat GIF
+      embed = new EmbedBuilder()
+        .setColor(embedColor)
+        .setTitle('🎮 Split & Steal - In Progress')
+        .setThumbnail(thumbnailUrl) // ❤️ Heartbeat GIF
+        .setDescription(
+          `${prizeText}${prizeText ? '\n\n' : ''}${playerLines}\n\n${timerText}`.trim()
+        )
+        .setFooter({ text: 'Synx Tournaments' })
+        .setTimestamp(new Date());
+    } catch (gifError) {
+      // ⚠️ GIF failed - send WITHOUT thumbnail (still works!)
+      console.log(`⚠️ Button handler GIF failed, sending plain:`, gifError instanceof Error ? gifError.message : 'Unknown');
+      embed = new EmbedBuilder()
+        .setColor(embedColor)
+        .setTitle('🎮 Split & Steal - In Progress')
+        .setDescription(
+          `${prizeText}${prizeText ? '\n\n' : ''}${playerLines}\n\n${timerText}`.trim()
+        )
+        .setFooter({ text: 'Synx Tournaments' })
+        .setTimestamp(new Date());
+    }
 
     // Update the original message
     await interaction.message.edit({
