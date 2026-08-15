@@ -252,6 +252,10 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     let prizeText = '';
     if (game.prizeValue || game.prizeName) {
       prizeText = `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || ''}`.trim();
+      // Add description on next line if exists
+      if (game.prizeDescription) {
+        prizeText += `\n📝 *${game.prizeDescription}*`;
+      }
     }
 
     const embed = new EmbedBuilder()
