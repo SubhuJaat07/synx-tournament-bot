@@ -70,15 +70,6 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
       return;
     }
 
-    // ⚡ FAST: Check cache for existing active game (0.001ms vs 200ms DB call)
-    const existingGame = gameCache.getByChannel(interaction.channelId);
-    if (existingGame) {
-      await interaction.editReply({
-        content: `❌ **Error:** There's already an active game in this channel!\nPlease wait for it to complete or cancel it.`,
-      });
-      return;
-    }
-
     // Set default values (timer already parsed!)
     const timerSeconds = config.timer || 60;
     const resultMode = (config.resultMode as 'timer_end' | 'both_clicked') || 'timer_end';
