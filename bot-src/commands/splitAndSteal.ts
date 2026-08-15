@@ -230,6 +230,18 @@ async function startLiveCountdown(
   // Get client for fetching channel/message
   const { client } = await import('../index.ts');
   
+  // ❤️ Select ONE random heartbeat GIF for this ENTIRE game (doesn't change every second!)
+  const heartbeatGifs = [
+    'https://media.giphy.com/media/JQRfa8kPwx5xgc51jG/giphy.gif', // User's 2D heartbeat
+    'https://media.giphy.com/media/ZOStzpF9H5syI/giphy.gif',      // Crush butterflies
+    'https://media.giphy.com/media/6UsPdACZamjok/giphy.gif',       // Heart pulse
+    'https://media.giphy.com/media/YAIOuXv2zYDW8/giphy.gif',       // Heartbeat line
+    'https://media.giphy.com/media/S9E88u47Lxc3uqhsse/giphy.gif',  // Health visuals ECG
+    'https://media.giphy.com/media/Oozt5b5IIWWUKJjknH/giphy.gif',   // Love heartbeat
+    'https://media.giphy.com/media/oStBM1ANst52U/giphy.gif'        // Biology science art
+  ];
+  const selectedHeartbeatGif = heartbeatGifs[Math.floor(Math.random() * heartbeatGifs.length)];
+  
   // 🚀 IMMEDIATE first update (no 1s wait!) - prevents flicker!
   const doCountdownUpdate = async () => {
     try {
@@ -272,28 +284,16 @@ async function startLiveCountdown(
       let progressBar = '';
       let thumbnailUrl: string | null = null; // Animated GIF on RIGHT SIDE!
       
-      // ❤️ Random Heartbeat GIFs for 30-11s phase (7 total - random each second!)
-      const heartbeatGifs = [
-        'https://media.giphy.com/media/JQRfa8kPwx5xgc51jG/giphy.gif', // User's 2D heartbeat
-        'https://media.giphy.com/media/ZOStzpF9H5syI/giphy.gif',      // Crush butterflies
-        'https://media.giphy.com/media/6UsPdACZamjok/giphy.gif',       // Heart pulse
-        'https://media.giphy.com/media/YAIOuXv2zYDW8/giphy.gif',       // Heartbeat line
-        'https://media.giphy.com/media/S9E88u47Lxc3uqhsse/giphy.gif',  // Health visuals ECG
-        'https://media.giphy.com/media/Oozt5b5IIWWUKJjknH/giphy.gif',   // Love heartbeat
-        'https://media.giphy.com/media/oStBM1ANst52U/giphy.gif'        // Biology science art
-      ];
-      
       if (timeRemaining <= 30 && timeRemaining > 10) {
-        // ⏱️ Last 30s-11s - User's custom 30s countdown GIF on RIGHT!
+        // ⏱️ Last 30s-11s - Heartbeat animation (SAME GIF for entire game!)
         embedColor = 0xffcc00;
         const progress = Math.floor((timeRemaining / 30) * 10);
         const filled = '█'.repeat(progress);
         const empty = '░'.repeat(10 - progress);
         progressBar = `\n\`${filled}${empty}\` **${timeRemaining}s**`;
         timerText = `⚡ **${timeDisplay} remaining**${progressBar}`;
-        // ❤️ Random heartbeat animation (NOT countdown - loops naturally!)
-        const randomHeartbeat = heartbeatGifs[Math.floor(Math.random() * heartbeatGifs.length)];
-        thumbnailUrl = randomHeartbeat;
+        // ❤️ Use the PRE-SELECTED GIF (doesn't change every second!)
+        thumbnailUrl = selectedHeartbeatGif;
       } else if (timeRemaining <= 10 && timeRemaining > 5) {
         // 🔥 Last 10s-6s - Red urgent + fire animation on RIGHT!
         embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xff3333;

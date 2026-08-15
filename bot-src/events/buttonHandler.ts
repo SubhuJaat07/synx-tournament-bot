@@ -227,7 +227,7 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     let timerText = `⏳ **${timeDisplay} remaining**`;
     let thumbnailUrl: string | null = null;
     
-    // ❤️ Random Heartbeat GIFs for 30-11s phase (7 total - random each second!)
+    // ❤️ Select ONE heartbeat GIF based on game ID (consistent for same game!)
     const heartbeatGifs = [
       'https://media.giphy.com/media/JQRfa8kPwx5xgc51jG/giphy.gif', // User's 2D heartbeat
       'https://media.giphy.com/media/ZOStzpF9H5syI/giphy.gif',      // Crush butterflies
@@ -237,17 +237,19 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       'https://media.giphy.com/media/Oozt5b5IIWWUKJjknH/giphy.gif',   // Love heartbeat
       'https://media.giphy.com/media/oStBM1ANst52U/giphy.gif'        // Biology science art
     ];
+    // Use game ID to pick consistent GIF (same game = same GIF always!)
+    const gifIndex = game.id.charCodeAt(0) % heartbeatGifs.length;
+    const selectedHeartbeatGif = heartbeatGifs[gifIndex];
     
     if (timeRemaining <= 30 && timeRemaining > 10) {
-      // ⏱️ Abstract timer animation (NOT countdown - avoids looping confusion!)
+      // ⏱️ Heartbeat animation (SAME GIF every time for this game!)
       embedColor = 0xffcc00;
       const progress = Math.floor((timeRemaining / 30) * 10);
       const filled = '█'.repeat(progress);
       const empty = '░'.repeat(10 - progress);
       timerText = `⚡ **${timeDisplay} remaining**\n\`${filled}${empty}\` **${timeRemaining}s**`;
-      // ❤️ Random heartbeat animation (NOT countdown - loops naturally!)
-      const randomHeartbeat = heartbeatGifs[Math.floor(Math.random() * heartbeatGifs.length)];
-      thumbnailUrl = randomHeartbeat;
+      // ❤️ Use CONSISTENT GIF (based on game ID, not random!)
+      thumbnailUrl = selectedHeartbeatGif;
     } else if (timeRemaining <= 10 && timeRemaining > 5) {
       embedColor = 0xff0000;
       const progress = Math.floor((timeRemaining / 10) * 10);
