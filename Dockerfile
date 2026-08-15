@@ -22,11 +22,7 @@ COPY bot-src/ ./src/
 COPY bot-tsconfig.json ./tsconfig.json
 COPY bot-database/ ./database/
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 botuser
-
-USER botuser
+# No user creation needed for Railway (simpler = better!)
 
 EXPOSE 3000
 
