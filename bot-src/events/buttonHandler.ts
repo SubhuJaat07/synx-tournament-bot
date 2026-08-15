@@ -225,6 +225,7 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     // 🎨 Animated countdown for button handler too!
     let embedColor = 0xffaa00;
     let timerText = `⏳ **${timeDisplay} remaining**`;
+    let thumbnailUrl: string | null = null;
     
     if (timeRemaining <= 30 && timeRemaining > 10) {
       embedColor = 0xffcc00;
@@ -232,20 +233,24 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       const filled = '█'.repeat(progress);
       const empty = '░'.repeat(10 - progress);
       timerText = `⚡ **${timeDisplay} remaining**\n\`${filled}${empty}\` **${timeRemaining}s**`;
+      thumbnailUrl = 'https://media.giphy.com/media/3o7TKMt1VVNkHV2PaU/giphy.gif';
     } else if (timeRemaining <= 10 && timeRemaining > 5) {
       embedColor = 0xff0000;
       const progress = Math.floor((timeRemaining / 10) * 10);
       const filled = '🔴'.repeat(Math.ceil(progress / 2));
       const empty = '⬜'.repeat(5 - Math.ceil(progress / 2));
       timerText = `🔥 **${timeDisplay} remaining**\n${filled}${empty} **${timeRemaining}s**`;
+      thumbnailUrl = 'https://media.giphy.com/media/Xe7oPyvA6LvBNKbZoX/giphy.gif';
     } else if (timeRemaining <= 5) {
       embedColor = 0xff0000;
       timerText = `⏰ **${timeDisplay}**\n💀💀💀💀💀 **${timeRemaining}** 💀💀💀💀💀`;
+      thumbnailUrl = 'https://media.giphy.com/media/j3gFfV7LHhUQU/giphy.gif';
     }
 
     const embed = new EmbedBuilder()
       .setColor(embedColor)
       .setTitle('🎮 Split & Steal - In Progress')
+      .setThumbnail(thumbnailUrl)
       .setDescription(
         `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}\n\n${timerText}`.trim()
       )

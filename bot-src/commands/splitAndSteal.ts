@@ -293,34 +293,39 @@ async function startLiveCountdown(
       let embedColor = 0xffaa00; // Default orange
       let timerText = `⏳ **${timeDisplay} remaining**`;
       let progressBar = '';
+      let thumbnailUrl: string | null = null; // Animated GIF for last 30s!
       
       if (timeRemaining <= 30 && timeRemaining > 10) {
-        // ⚡ Last 30s - Yellow warning + progress bar
+        // ⚡ Last 30s - Yellow warning + progress bar + animated clock
         embedColor = 0xffcc00;
         const progress = Math.floor((timeRemaining / 30) * 10);
         const filled = '█'.repeat(progress);
         const empty = '░'.repeat(10 - progress);
         progressBar = `\n\`${filled}${empty}\` **${timeRemaining}s**`;
         timerText = `⚡ **${timeDisplay} remaining**${progressBar}`;
-      } else if (timeRemaining <= 10) {
-        // 🔥 Last 10s - Red urgent + animated pulse effect!
+        thumbnailUrl = 'https://media.giphy.com/media/3o7TKMt1VVNkHV2PaU/giphy.gif'; // ⏰ Clock animation
+      } else if (timeRemaining <= 10 && timeRemaining > 5) {
+        // 🔥 Last 10s - Red urgent + fire animation
         embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xff3333;
         const progress = Math.floor((timeRemaining / 10) * 10);
         const filled = '🔴'.repeat(Math.ceil(progress / 2));
         const empty = '⬜'.repeat(5 - Math.ceil(progress / 2));
         progressBar = `\n${filled}${empty} **${timeRemaining}s**`;
         timerText = `🔥 **${timeDisplay} remaining**${progressBar}`;
+        thumbnailUrl = 'https://media.giphy.com/media/Xe7oPyvA6LvBNKbZoX/giphy.gif'; // 🔥 Fire animation
       } else if (timeRemaining <= 5) {
-        // 💀 Last 5s - Critical! Flashing red!
+        // 💀 Last 5s - Critical! Skull animation + flashing red
         embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xaa0000;
         progressBar = `\n💀💀💀💀💀 **${timeRemaining}** 💀💀💀💀💀`;
         timerText = `⏰ **${timeDisplay}**${progressBar}`;
+        thumbnailUrl = 'https://media.giphy.com/media/j3gFfV7LHhUQU/giphy.gif'; // 💀 Skull/danger animation
       }
 
       // Create updated embed with live timer (timer in content, not footer!)
       const liveEmbed = new EmbedBuilder()
         .setColor(embedColor)
         .setTitle('🎮 Split & Steal - In Progress')
+        .setThumbnail(thumbnailUrl) // ✅ Animated GIF thumbnail!
         .setDescription(
           `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}\n\n${timerText}`.trim()
         )
