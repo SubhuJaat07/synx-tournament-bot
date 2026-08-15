@@ -88,7 +88,7 @@ client.on('interactionCreate', async (interaction) => {
 
     if (interaction.isChatInputCommand()) {
       switch (interaction.commandName) {
-        case 'splitandsteal':
+        case 'split-or-steal':
           await handleSplitStealCommand(interaction);
           break;
         case 'synx-help':
@@ -138,7 +138,7 @@ client.on('interactionCreate', async (interaction) => {
 async function registerCommands() {
   const commands = [
     {
-      name: 'splitandsteal',
+      name: 'split-or-steal',
       description: 'Start a Split & Steal game between two players!',
       options: [
         {
@@ -227,7 +227,7 @@ async function handleHelpCommand(interaction: any) {
   const helpEmbed = {
     color: 0x00ff88,
     title: '🎮 Synx Tournaments',
-    description: '**Split & Steal** Tournament Bot\n\n`/splitandsteal @player1 @player2 [timer: 60s]`\n\n✅ Both Split → 50-50\n❌ Both SteAL → 0-0\n🏆 One Steals → Takes ALL!',
+    description: '**Split & Steal** Tournament Bot\n\n`/split-or-steal @player1 @player2 [timer: 60s]`\n\n✅ Both Split → 50-50\n❌ Both SteAL → 0-0\n🏆 One Steals → Takes ALL!',
     footer: { text: 'Timer formats: 30s, 2m, 1h, 1d | No limits!' },
   };
 

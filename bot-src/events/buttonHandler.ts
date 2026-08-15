@@ -256,12 +256,12 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       )
       .addFields(
         {
-          name: `<@${game.playerId1}> ${p1Status}`,
+          name: `**${game.playerName1}** ${p1Status}`,
           value: '\u200B', // Zero-width space (required by Discord)
           inline: true,
         },
         {
-          name: `<@${game.playerId2}> ${p2Status}`,
+          name: `**${game.playerName2}** ${p2Status}`,
           value: '\u200B',
           inline: true,
         }

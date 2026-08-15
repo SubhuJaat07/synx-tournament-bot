@@ -70,6 +70,22 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
       return;
     }
 
+    // 🎭 Get Server Nicknames (if in guild, otherwise use username)
+    let player1DisplayName = config.player1.username;
+    let player2DisplayName = config.player2.username;
+    
+    if (interaction.guild) {
+      try {
+        const member1 = await interaction.guild.members.fetch(config.player1.id).catch(() => null);
+        const member2 = await interaction.guild.members.fetch(config.player2.id).catch(() => null);
+        
+        if (member1) player1DisplayName = member1.displayName;
+        if (member2) player2DisplayName = member2.displayName;
+      } catch (error) {
+        console.log('⚠️ Could not fetch guild members, using usernames');
+      }
+    }
+
     // Set default values (timer already parsed!)
     const timerSeconds = config.timer || 60;
     const resultMode = (config.resultMode as 'timer_end' | 'both_clicked') || 'timer_end';
@@ -78,28 +94,28 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
     const gameId = uuidv4();
     const now = new Date();
 
-    // Create initial embed message
-    const embed = createGameEmbed(config, timerSeconds, resultMode);
+    // Create initial embed message (pass display names)
+    const embed = createGameEmbed(config, timerSeconds, resultMode, player1DisplayName, player2DisplayName);
 
     // Create buttons for both players
     const actionRow = createActionRow(gameId);
 
-    // Send the game message (minimal format)
+    // Send the game message (minimal format) - Use nicknames!
     const message = await interaction.editReply({
-      content: `🎮 **Split & Steal** <@${config.player1.id}> vs <@${config.player2.id}>`,
+      content: `🎮 **Split & Steal** **${player1DisplayName}** vs **${player2DisplayName}**`,
       embeds: [embed],
       components: [actionRow],
     });
 
-    // ⚡ Create CachedGame object (IMMEDIATE - no DB wait)
+    // ⚡ Create CachedGame object (IMMEDIATE - no DB wait) - Store nicknames!
     const cachedGame: CachedGame = {
       id: gameId,
       channelId: interaction.channelId,
       messageId: message.id,
       playerId1: config.player1.id,
-      playerName1: `${config.player1.username}`,
+      playerName1: player1DisplayName, // ✅ Nickname stored!
       playerId2: config.player2.id,
-      playerName2: `${config.player2.username}`,
+      playerName2: player2DisplayName, // ✅ Nickname stored!
       prizeName: config.prizeName || undefined,
       prizeValue: config.prizeValue || undefined,
       prizeDescription: config.prizeDescription || undefined,
@@ -141,7 +157,7 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
   }
 }
 
-function createGameEmbed(config: GameConfig, timerSeconds: number, resultMode: string): EmbedBuilder {
+function createGameEmbed(config: GameConfig, timerSeconds: number, resultMode: string, player1Name?: string, player2Name?: string): EmbedBuilder {
   const prizeInfo = config.prizeName || config.prizeValue 
     ? `💎 **Prize:** ${config.prizeValue || ''} ${config.prizeName || ''}`.trim()
     : '💎 **Prize:** Mystery Prize';
@@ -155,6 +171,10 @@ function createGameEmbed(config: GameConfig, timerSeconds: number, resultMode: s
   const seconds = timerSeconds % 60;
   const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
 
+  // Use provided display names (nicknames) or fallback to usernames
+  const p1Name = player1Name || config.player1.username;
+  const p2Name = player2Name || config.player2.username;
+
   return new EmbedBuilder()
     .setColor(0x00ff88)
     .setTitle('🎮 Split & Steal - In Progress')
@@ -163,12 +183,12 @@ function createGameEmbed(config: GameConfig, timerSeconds: number, resultMode: s
     )
     .addFields(
       {
-        name: `<@${config.player1.id}> ⏳`,
+        name: `**${p1Name}** ⏳`,
         value: '\u200B',
         inline: true,
       },
       {
-        name: `<@${config.player2.id}> ⏳`,
+        name: `**${p2Name}** ⏳`,
         value: '\u200B',
         inline: true,
       }
@@ -331,12 +351,12 @@ async function startLiveCountdown(
         )
         .addFields(
           {
-            name: `<@${game.playerId1}> ${p1Status}`,
+            name: `**${game.playerName1}** ${p1Status}`,
             value: '\u200B',
             inline: true,
           },
           {
-            name: `<@${game.playerId2}> ${p2Status}`,
+            name: `**${game.playerName2}** ${p2Status}`,
             value: '\u200B',
             inline: true,
           }
