@@ -306,8 +306,8 @@ function createResultsEmbedFromCache(
 function calculatePrizeShare(prizeValue: string | null | undefined, percentage: number): string {
   if (!prizeValue) return `${percentage}%`;
   
-  // Try to parse numeric value (handles "10", "100K", "5000", etc.)
-  const numMatch = prizeValue.match(/^(\d+(?:\.\d+)?)([KkMmBb]?)/);
+  // Try to parse numeric value (handles "10", "100K", "10 K", "5000", etc.)
+  const numMatch = prizeValue.match(/^(\d+(?:\.\d+)?)\s*([KkMmBb]?)$/);
   if (numMatch) {
     let num = parseFloat(numMatch[1]);
     const suffix = numMatch[2]?.toUpperCase() || '';
