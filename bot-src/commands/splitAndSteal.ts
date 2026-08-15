@@ -286,13 +286,13 @@ async function startLiveCountdown(
         )
         .addFields(
           {
-            name: `<@${game.playerId1}>`,
-            value: p1Status,
+            name: `<@${game.playerId1}> ${p1Status}`,
+            value: '\u200B',
             inline: true,
           },
           {
-            name: `<@${game.playerId2}>`,
-            value: p2Status,
+            name: `<@${game.playerId2}> ${p2Status}`,
+            value: '\u200B',
             inline: true,
           }
         )

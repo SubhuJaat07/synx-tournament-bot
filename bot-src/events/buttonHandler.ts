@@ -208,7 +208,7 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     const seconds = timeRemaining % 60;
     const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
     
-    // DON'T reveal choices! Just show if they chose or not
+    // DON'T reveal choices! Just show if they chose or not (compact format)
     const p1Status = game.choice1 ? '✅ **Chosen!** 🤫' : '⏳ Waiting...';
     const p2Status = game.choice2 ? '✅ **Chosen!** 🤫' : '⏳ Waiting...';
 
@@ -223,13 +223,13 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       )
       .addFields(
         {
-          name: `<@${game.playerId1}>`,
-          value: p1Status,
+          name: `<@${game.playerId1}> ${p1Status}`,
+          value: '\u200B', // Zero-width space (required by Discord)
           inline: true,
         },
         {
-          name: `<@${game.playerId2}>`,
-          value: p2Status,
+          name: `<@${game.playerId2}> ${p2Status}`,
+          value: '\u200B',
           inline: true,
         }
       )
