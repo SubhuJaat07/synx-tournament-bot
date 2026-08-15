@@ -128,16 +128,16 @@ export async function handleButtonInteraction(interaction: ButtonInteraction, cl
     // Update cache with history
     gameCache.set(updatedGame);
 
-    // Send SECRET confirmation (DON'T reveal what they chose!) - SAFE for quick clicks
-    try {
-      await interaction.followUp({
-        content: existingChoice 
-          ? `🔄 **${playerName}**, your choice has been **updated**!\n🤫 Still a secret...`
-          : `✅ **${playerName}**, your choice has been recorded!\n🤫 Shh! Keep it secret until the game ends...`,
-        ephemeral: true
-      });
-    } catch (followUpError) {
-      console.log(`⚠️ FollowUp failed (quick click): ${followUpError instanceof Error ? followUpError.message : 'Unknown'}`);
+    // Send confirmation ONLY if updating choice (first time = ✅ in embed is enough!)
+    if (existingChoice) {
+      try {
+        await interaction.followUp({
+          content: `🔄 Choice updated to **${choice.toUpperCase()}**!`,
+          ephemeral: true
+        });
+      } catch (followUpError) {
+        console.log(`⚠️ FollowUp failed (quick click): ${followUpError instanceof Error ? followUpError.message : 'Unknown'}`);
+      }
     }
 
     // Update embed to show current status (using cached data) - SAFE for quick clicks
