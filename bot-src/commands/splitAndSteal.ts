@@ -169,22 +169,7 @@ function createGameEmbed(config: GameConfig, timerSeconds: number, resultMode: s
       `👤 **Player 1:** <@${config.player1.id}>\n` +
       `👤 **Player 2:** <@${config.player2.id}>`
     )
-    .addFields(
-      {
-        name: '📖 How it Works',
-        value: 
-          '• ✅ **Both SPLIT** → Prize split **50-50**\n' +
-          '• ❌ **Both STEAL** → **Nobody wins!**\n' +
-          '• 🏆 **One Splits, One Steals** → **Stealer takes ALL!**',
-        inline: false,
-      },
-      {
-        name: '⏳ Status',
-        value: '⏳ **Waiting for choices...**',
-        inline: false,
-      }
-    )
-    .setFooter({ text: 'Synx Tournaments © 2024' })
+    .setFooter({ text: 'Synx Tournaments' })
     .setTimestamp(new Date());
 }
 
