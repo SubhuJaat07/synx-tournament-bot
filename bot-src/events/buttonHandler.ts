@@ -226,7 +226,7 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       .setColor(0xffaa00)
       .setTitle('🎮 Split & Steal - In Progress')
       .setDescription(
-        `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}`.trim()
+        `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}\n\n⏳ **${timeDisplay} remaining**`.trim()
       )
       .addFields(
         {

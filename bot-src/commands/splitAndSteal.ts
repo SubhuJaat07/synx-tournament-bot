@@ -125,8 +125,8 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
     // Start the timer
     startGameTimer(gameId, interaction, config, timerSeconds, resultMode);
     
-    // ⏱️ Start LIVE countdown timer (updates every 4 seconds)
-    startLiveCountdown(gameId, interaction.channelId, message.id);
+    // ⏱️ Start LIVE countdown timer (updates every 1 second) - PASS BUTTONS!
+    startLiveCountdown(gameId, interaction.channelId, message.id, actionRow);
 
   } catch (error) {
     console.error('Error in splitandsteal command:', error);
@@ -143,24 +143,34 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
 
 function createGameEmbed(config: GameConfig, timerSeconds: number, resultMode: string): EmbedBuilder {
   const prizeInfo = config.prizeName || config.prizeValue 
-    ? `\n💎 **Prize:** ${config.prizeValue || ''} ${config.prizeName || ''}`.trim()
-    : '';
+    ? `💎 **Prize:** ${config.prizeValue || ''} ${config.prizeName || ''}`.trim()
+    : '💎 **Prize:** Mystery Prize';
   
   const prizeDesc = config.prizeDescription 
     ? `\n📝 ${config.prizeDescription}`
     : '';
 
+  // Format initial timer display
+  const minutes = Math.floor(timerSeconds / 60);
+  const seconds = timerSeconds % 60;
+  const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+
   return new EmbedBuilder()
     .setColor(0x00ff88)
-    .setTitle('🎮 Split & Steal Tournament')
+    .setTitle('🎮 Split & Steal - In Progress')
     .setDescription(
-      `**Choose your fate!**${prizeInfo}${prizeDesc}`
+      `${prizeInfo}${prizeDesc}\n\n⏳ **${timeDisplay} remaining**`
     )
     .addFields(
       {
-        name: '⏳ Status',
-        value: '⏳ Waiting for choices...',
-        inline: false,
+        name: `<@${config.player1.id}> ⏳`,
+        value: '\u200B',
+        inline: true,
+      },
+      {
+        name: `<@${config.player2.id}> ⏳`,
+        value: '\u200B',
+        inline: true,
       }
     )
     .setFooter({ text: 'Synx Tournaments' })
@@ -227,12 +237,13 @@ async function startGameTimer(
 }
 
 /**
- * ⏱️ LIVE Countdown Timer - Updates embed every 4 seconds with remaining time
+ * ⏱️ LIVE Countdown Timer - Updates embed every 1 second with remaining time
  */
 async function startLiveCountdown(
   gameId: string,
   channelId: string,
-  messageId: string
+  messageId: string,
+  actionRow: ActionRowBuilder<ButtonBuilder>
 ) {
   // Clear any existing interval for this game
   if (activeIntervals.has(gameId)) {
@@ -277,12 +288,12 @@ async function startLiveCountdown(
       const p2Status = game.choice2 ? '✅' : '⏳';
       const choiceCount = (game.choice1 ? 1 : 0) + (game.choice2 ? 1 : 0);
 
-      // Create updated embed with live timer
+      // Create updated embed with live timer (timer in content, not footer!)
       const liveEmbed = new EmbedBuilder()
         .setColor(0xffaa00)
         .setTitle('🎮 Split & Steal - In Progress')
         .setDescription(
-          `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}`.trim()
+          `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}\n\n⏳ **${timeDisplay} remaining**`.trim()
         )
         .addFields(
           {
@@ -296,15 +307,18 @@ async function startLiveCountdown(
             inline: true,
           }
         )
-        .setFooter({ text: `⏳ ${timeDisplay} remaining • Synx Tournaments` })
+        .setFooter({ text: 'Synx Tournaments' })
         .setTimestamp(new Date());
 
-      // Fetch channel and update message
+      // Fetch channel and update message (KEEP BUTTONS!)
       const channel = await client.channels.fetch(channelId).catch(() => null);
       if (channel && channel.isTextBased()) {
         const msg = await channel.messages.fetch(messageId).catch(() => null);
         if (msg) {
-          await msg.edit({ embeds: [liveEmbed] }).catch(err => 
+          await msg.edit({ 
+            embeds: [liveEmbed],
+            components: [actionRow] // IMPORTANT: Keep buttons visible!
+          }).catch(err => 
             console.error('Failed to update live countdown:', err?.message)
           );
         }
