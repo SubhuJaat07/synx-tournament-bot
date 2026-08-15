@@ -211,12 +211,12 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       )
       .addFields(
         {
-          name: `👤 @${game.playerName1}`,
+          name: `<@${game.playerId1}>`,
           value: p1Status,
           inline: true,
         },
         {
-          name: `👤 @${game.playerName2}`,
+          name: `<@${game.playerId2}>`,
           value: p2Status,
           inline: true,
         },

@@ -21,7 +21,7 @@ interface GameConfig {
 export interface GameResult {
   winner_id: string | null;
   winner_username: string | null;
-  result_type: 'split_split' | 'steal_steal' | 'split_steal' | 'steal_split';
+  result_type: 'split_split' | 'steal_steal' | 'split_steal' | 'steal_split' | 'no_choice_no_choice' | 'no_choice_split' | 'no_choice_steal' | 'split_no_choice' | 'steal_no_choice';
   player1_prize_share: number;
   player2_prize_share: number;
   description: string;
@@ -40,7 +40,7 @@ export function calculateResultFromCache(game: CachedGame): GameResult {
     return {
       winner_id: null,
       winner_username: null,
-      result_type: 'steal_steal',
+      result_type: 'no_choice_no_choice',
       player1_prize_share: 0,
       player2_prize_share: 0,
       description: '⏰ **Time Up!** Neither player made a choice in time.',
@@ -53,21 +53,21 @@ export function calculateResultFromCache(game: CachedGame): GameResult {
       return {
         winner_id: game.playerId2,
         winner_username: game.playerName2,
-        result_type: 'split_steal',
+        result_type: 'no_choice_steal',
         player1_prize_share: 0,
         player2_prize_share: 100,
-        description: `🏆 <@${game.playerName2}> wins by default! <@${game.playerName1}> didn't respond in time.`,
+        description: `🏆 <@${game.playerId2}> wins by default! <@${game.playerId1}> **didn't choose anything**.`,
         emoji: '🏆',
       };
     } else {
       return {
         winner_id: null,
         winner_username: null,
-        result_type: 'split_split',
-        player1_prize_share: 50,
-        player2_prize_share: 50,
-        description: `⚖️ **Fair Split!** <@${game.playerName2}> chose to SPLIT, but <@${game.playerName1}> didn't respond.`,
-        emoji: '⚖️',
+        result_type: 'no_choice_split',
+        player1_prize_share: 0,
+        player2_prize_share: 100,
+        description: `🤝 <@${game.playerId2}> chose to **SPLIT**, but <@${game.playerId1}> **didn't choose anything**.\n📦 <@${game.playerId2}> gets the full prize!`,
+        emoji: '🤝',
       };
     }
   }
@@ -77,21 +77,21 @@ export function calculateResultFromCache(game: CachedGame): GameResult {
       return {
         winner_id: game.playerId1,
         winner_username: game.playerName1,
-        result_type: 'steal_split',
+        result_type: 'steal_no_choice',
         player1_prize_share: 100,
         player2_prize_share: 0,
-        description: `🏆 <@${game.playerName1}> wins by default! <@${game.playerName2}> didn't respond in time.`,
+        description: `🏆 <@${game.playerId1}> wins by default! <@${game.playerId2}> **didn't choose anything**.`,
         emoji: '🏆',
       };
     } else {
       return {
         winner_id: null,
         winner_username: null,
-        result_type: 'split_split',
-        player1_prize_share: 50,
-        player2_prize_share: 50,
-        description: `⚖️ **Fair Split!** <@${game.playerName1}> chose to SPLIT, but <@${game.playerName2}> didn't respond.`,
-        emoji: '⚖️',
+        result_type: 'split_no_choice',
+        player1_prize_share: 100,
+        player2_prize_share: 0,
+        description: `🤝 <@${game.playerId1}> chose to **SPLIT**, but <@${game.playerId2}> **didn't choose anything**.\n📦 <@${game.playerId1}> gets the full prize!`,
+        emoji: '🤝',
       };
     }
   }
@@ -128,7 +128,7 @@ export function calculateResultFromCache(game: CachedGame): GameResult {
       result_type: 'split_steal',
       player1_prize_share: 0,
       player2_prize_share: 100,
-      description: `💀 <@${game.playerName1}> chose to **SPLIT**, but <@${game.playerName2}> chose to **STEAL**!\n🏆 **<@${game.playerName2}> takes everything!**`,
+      description: `💀 <@${game.playerId1}> chose to **SPLIT**, but <@${game.playerId2}> chose to **STEAL**!\n🏆 **<@${game.playerId2}> takes everything!**`,
       emoji: '💀',
     };
   }
@@ -140,7 +140,7 @@ export function calculateResultFromCache(game: CachedGame): GameResult {
     result_type: 'steal_split',
     player1_prize_share: 100,
     player2_prize_share: 0,
-    description: `💀 <@${game.playerName2}> chose to **SPLIT**, but <@${game.playerName1}> chose to **STEAL**!\n🏆 **<@${game.playerName1}> takes everything!**`,
+    description: `💀 <@${game.playerId2}> chose to **SPLIT**, but <@${game.playerId1}> chose to **STEAL**!\n🏆 **<@${game.playerId1}> takes everything!**`,
     emoji: '💀',
   };
 }
@@ -239,6 +239,17 @@ function createResultsEmbedFromCache(
     case 'steal_split':
       color = 0xffaa00; // Orange
       break;
+    case 'no_choice_no_choice':
+      color = 0x808080; // Gray - both didn't choose
+      break;
+    case 'no_choice_steal':
+    case 'steal_no_choice':
+      color = 0xffaa00; // Orange - someone stole, other didn't choose
+      break;
+    case 'no_choice_split':
+    case 'split_no_choice':
+      color = 0x00ff88; // Light green - someone split, other didn't choose
+      break;
     default:
       color = 0x00ff88;
   }
@@ -248,7 +259,7 @@ function createResultsEmbedFromCache(
   if (game.choiceHistory && game.choiceHistory.length > 0) {
     const timeline = game.choiceHistory.map((h, i) => {
       const time = h.timestamp.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      return `${i + 1}. **@${h.playerName}** chose **${h.choice.toUpperCase()}** (${time})`;
+      return `${i + 1}. **<@${h.playerId}>** chose **${h.choice.toUpperCase()}** (${time})`;
     });
     historyText = timeline.join('\n');
   }
@@ -259,12 +270,12 @@ function createResultsEmbedFromCache(
     .setTitle(`${result.emoji} Game Over!`)
     .addFields(
       {
-        name: `@${game.playerName1}`,
+        name: `<@${game.playerId1}>`,
         value: p1ChoiceText,
         inline: true,
       },
       {
-        name: `@${game.playerName2}`,
+        name: `<@${game.playerId2}>`,
         value: p2ChoiceText,
         inline: true,
       }
@@ -274,7 +285,7 @@ function createResultsEmbedFromCache(
   if (result.winner_id) {
     embed.addFields({
       name: '🏆 Winner',
-      value: `@${result.winner_username} takes all!`,
+      value: `<@${result.winner_id}> takes all!`,
       inline: false,
     });
   }
@@ -300,16 +311,32 @@ function createAnnouncementMessageFromCache(game: CachedGame, result: GameResult
   
   switch (result.result_type) {
     case 'split_split':
-      return `🤝 **@${game.playerName1}** and **@${game.playerName2}** both chose to **SPLIT**!\n\n📦 **${prizeName}** has been divided equally (**50-50**) between both players!`;
+      return `🤝 **<@${game.playerId1}>** and **<@${game.playerId2}>** both chose to **SPLIT**!\n\n📦 **${prizeName}** has been divided equally (**50-50**) between both players!`;
     
     case 'steal_steal':
-      return `💀 Both **@${game.playerName1}** and **@${game.playerName2}** tried to **STEAL**!\n\n😢 **Nobody wins!** Both players were too greedy!\n\n💰 **${prizeName}** will be used in the next tournament!`;
+      return `💀 Both **<@${game.playerId1}>** and **<@${game.playerId2}>** tried to **STEAL**!\n\n😢 **Nobody wins!** Both players were too greedy!\n\n💰 **${prizeName}** will be used in the next tournament!`;
     
     case 'split_steal':
-      return `🏆 **@${game.playerName2}** stole **${prizeName}**!\n\n💀 **@${game.playerName1}** chose to SPLIT but got betrayed!`;
+      return `🏆 **<@${game.playerId2}>** stole **${prizeName}**!\n\n💀 **<@${game.playerId1}>** chose to SPLIT but got betrayed!`;
     
     case 'steal_split':
-      return `🏆 **@${game.playerName1}** stole **${prizeName}**!\n\n💀 **@${game.playerName2}** chose to SPLIT but got betrayed!`;
+      return `🏆 **<@${game.playerId1}>** stole **${prizeName}**!\n\n💀 **<@${game.playerId2}>** chose to SPLIT but got betrayed!`;
+    
+    // New no-choice cases
+    case 'no_choice_no_choice':
+      return `⏰ **Time's up!** Neither **<@${game.playerId1}>** nor **<@${game.playerId2}>** made a choice!\n\n😴 Everyone was sleeping on the job! **${prizeName}** carries over to next time.`;
+    
+    case 'no_choice_steal':
+      return `🏆 **<@${game.playerId2}>** takes **${prizeName}** by default!\n\n⚠️ **<@${game.playerId1}>** didn't choose anything - auto-forfeit!`;
+    
+    case 'no_choice_split':
+      return `🤝 **<@${game.playerId2}>** gets the full **${prizeName}**!\n\n⚠️ **<@${game.playerId1}>** didn't choose anything - they chose SPLIT so you get it all by default!`;
+    
+    case 'steal_no_choice':
+      return `🏆 **<@${game.playerId1}>** takes **${prizeName}** by default!\n\n⚠️ **<@${game.playerId2}>** didn't choose anything - auto-forfeit!`;
+    
+    case 'split_no_choice':
+      return `🤝 **<@${game.playerId1}>** gets the full **${prizeName}**!\n\n⚠️ **<@${game.playerId2}>** didn't choose anything - they chose SPLIT so you get it all by default!`;
     
     default:
       return `🎮 **Game Over!** Check the embed above for results.`;

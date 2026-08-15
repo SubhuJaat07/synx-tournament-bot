@@ -92,9 +92,9 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
     // Create buttons for both players
     const actionRow = createActionRow(gameId);
 
-    // Send the game message (PING PLAYERS OUTSIDE EMBED!)
+    // Send the game message (minimal format)
     const message = await interaction.editReply({
-      content: `🎮 **Split & Steal** started! <@${config.player1.id}> vs <@${config.player2.id}>\n👆 **Your turn! Choose SPLIT or STEAL!**`,
+      content: `🎮 **Split & Steal** <@${config.player1.id}> vs <@${config.player2.id}>`,
       embeds: [embed],
       components: [actionRow],
     });
