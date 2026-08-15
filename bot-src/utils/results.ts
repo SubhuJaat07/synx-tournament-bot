@@ -183,9 +183,16 @@ export async function calculateAndShowResultsFromCache(
     const embed = createResultsEmbedFromCache(game, config, result, isTimerExpiry);
 
     // Update the original message with results and remove buttons
-    const message = interaction.isButton() 
-      ? interaction.message 
-      : await interaction.fetchReply();
+    // Safe check for isButton() - recovery might pass different interaction type
+    let message;
+    try {
+      message = (typeof interaction.isButton === 'function' && interaction.isButton()) 
+        ? interaction.message 
+        : await interaction.fetchReply();
+    } catch (msgError) {
+      console.log('⚠️ Getting message failed:', msgError instanceof Error ? msgError.message : 'Unknown');
+      message = await interaction.fetchReply();
+    }
 
     const editedMessage = await message.edit({
       content: null, // No extra text - embed shows "Game Over" already!
@@ -204,7 +211,7 @@ export async function calculateAndShowResultsFromCache(
     console.error('Error showing results:', error);
     
     try {
-      if (interaction.isButton()) {
+      if (typeof interaction.isButton === 'function' && interaction.isButton()) {
         await interaction.followUp({
           content: '❌ **Error:** Failed to show results. Please check bot logs.',
           ephemeral: true,
@@ -444,7 +451,7 @@ export async function calculateAndShowResults(
     const embed = createResultsEmbedDB(game, config, result, isTimerExpiry);
 
     // Update the original message with results and remove buttons
-    const message = interaction.isButton() 
+    const message = typeof interaction.isButton === 'function' && interaction.isButton() 
       ? interaction.message 
       : await interaction.fetchReply();
 
@@ -465,7 +472,7 @@ export async function calculateAndShowResults(
     console.error('Error showing results:', error);
     
     try {
-      if (interaction.isButton()) {
+      if (typeof interaction.isButton === 'function' && interaction.isButton()) {
         await interaction.followUp({
           content: '❌ **Error:** Failed to show results. Please check bot logs.',
           ephemeral: true,

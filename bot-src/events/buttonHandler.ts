@@ -234,7 +234,7 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       const empty = '░'.repeat(10 - progress);
       timerText = `⚡ **${timeDisplay} remaining**\n\`${filled}${empty}\` **${timeRemaining}s**`;
       // 🎬 Countdown animation on RIGHT side (thumbnail)!
-      thumbnailUrl = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGZkdHJqOGt0dGs3b3BwZnQ5aGNkZjNqaWZyaHZlcHRnczR0YmpuZyZlcD12MV9pbnRlcm5hbF9naWQ/3o7TKMt1VVNkHV2PaU/giphy.gif';
+      thumbnailUrl = 'https://media.giphy.com/media/3o7TKMt1VVNkHV2PaU/giphy.gif';
     } else if (timeRemaining <= 10 && timeRemaining > 5) {
       embedColor = 0xff0000;
       const progress = Math.floor((timeRemaining / 10) * 10);
@@ -264,12 +264,12 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       .addFields(
         {
           name: `**${game.playerName1}** ${p1Status}`,
-          value: '\u200B', // Zero-width space (required by Discord)
+          value: '⠀', // Thin space (no extra blank line!)
           inline: true,
         },
         {
           name: `**${game.playerName2}** ${p2Status}`,
-          value: '\u200B',
+          value: '⠀', // Thin space (no extra blank line!)
           inline: true,
         }
       )
