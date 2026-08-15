@@ -231,11 +231,6 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
           name: `<@${game.playerId2}>`,
           value: p2Status,
           inline: true,
-        },
-        {
-          name: '⏱️ Time Left',
-          value: timeRemaining > 0 ? `⏳ **${timeDisplay}** remaining` : '⏰ **Time\'s up!**',
-          inline: false,
         }
       )
       .setFooter({ text: 'Synx Tournaments' })

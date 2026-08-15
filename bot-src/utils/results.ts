@@ -314,7 +314,7 @@ function createAnnouncementMessageFromCache(game: CachedGame, result: GameResult
     
     // New no-choice cases
     case 'no_choice_no_choice':
-      return `⏰ **Time's up!** Neither **<@${game.playerId1}>** nor **<@${game.playerId2}>** made a choice!\n\n😴 Everyone was sleeping on the job! **${prizeDisplay}** carries over to next time.`;
+      return `⏰ **Time's up!** Neither **<@${game.playerId1}>** nor **<@${game.playerId2}>** made a choice! 😴 Everyone was sleeping on the job! **${prizeDisplay}** carries over to next tournament!`;
     
     case 'no_choice_steal':
       return `🏆 **<@${game.playerId2}>** takes **${prizeDisplay}** by default!\n\n⚠️ **<@${game.playerId1}>** didn't choose anything - auto-forfeit!`;

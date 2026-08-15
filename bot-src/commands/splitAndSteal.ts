@@ -294,14 +294,9 @@ async function startLiveCountdown(
             name: `<@${game.playerId2}>`,
             value: p2Status,
             inline: true,
-          },
-          {
-            name: '⏱️ Time Left',
-            value: `⏳ **${timeDisplay}** remaining`,
-            inline: false,
           }
         )
-        .setFooter({ text: 'Synx Tournaments • Live countdown' })
+        .setFooter({ text: `⏳ ${timeDisplay} remaining • Synx Tournaments` })
         .setTimestamp(new Date());
 
       // Fetch channel and update message
@@ -317,8 +312,8 @@ async function startLiveCountdown(
     } catch (error) {
       console.error('Error in live countdown update:', error);
     }
-  }, 4000); // Update every 4 seconds
+  }, 1000); // Update every 1 SECOND (live countdown!)
 
   activeIntervals.set(gameId, interval);
-  console.log(`⏱️ Live countdown started for game ${gameId} (updates every 4s)`);
+  console.log(`⏱️ Live countdown started for game ${gameId} (updates every 1s)`);
 }
