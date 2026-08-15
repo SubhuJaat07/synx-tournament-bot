@@ -160,10 +160,8 @@ export async function recordChoice(
     return null; // Not a valid player
   }
 
-  // 3. Check already chosen
-  if ((isPlayer1 && game.choice1) || (isPlayer2 && game.choice2)) {
-    return game; // Already chosen
-  }
+  // 3. Note: We ALLOW choice updates now!
+  // Don't block if already chosen - let them change their mind
 
   // 4. Update cache IMMEDIATELY
   const now = new Date();
