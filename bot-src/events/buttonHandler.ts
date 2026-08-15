@@ -234,18 +234,18 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       const empty = '░'.repeat(10 - progress);
       timerText = `⚡ **${timeDisplay} remaining**\n\`${filled}${empty}\` **${timeRemaining}s**`;
       // 🎬 Countdown animation on RIGHT side (thumbnail)!
-      thumbnailUrl = 'https://media.giphy.com/media/3o7TKMt1VVNkHV2PaU/giphy.gif';
+      thumbnailUrl = 'https://media.giphy.com/media/du3J3cXyzhj75IOgvA/giphy.gif';
     } else if (timeRemaining <= 10 && timeRemaining > 5) {
       embedColor = 0xff0000;
       const progress = Math.floor((timeRemaining / 10) * 10);
       const filled = '🔴'.repeat(Math.ceil(progress / 2));
       const empty = '⬜'.repeat(5 - Math.ceil(progress / 2));
       timerText = `🔥 **${timeDisplay} remaining**\n${filled}${empty} **${timeRemaining}s**`;
-      thumbnailUrl = 'https://media.giphy.com/media/Xe7oPyvA6LvBNKbZoX/giphy.gif'; // 🔥 Fire on RIGHT
+      thumbnailUrl = 'https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif'; // 🔥 Fire on RIGHT
     } else if (timeRemaining <= 5) {
       embedColor = 0xff0000;
       timerText = `⏰ **${timeDisplay}**\n💀💀💀💀💀 **${timeRemaining}** 💀💀💀💀💀`;
-      thumbnailUrl = 'https://media.giphy.com/media/j3gFfV7LHhUQU/giphy.gif'; // 💀 Danger on RIGHT
+      thumbnailUrl = 'https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif'; // 💀 Danger on RIGHT
     }
 
     // 🎯 Build prize display - ONLY if prize exists!
