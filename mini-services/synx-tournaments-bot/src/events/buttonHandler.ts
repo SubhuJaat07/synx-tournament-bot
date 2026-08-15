@@ -114,10 +114,9 @@ export async function handleButtonInteraction(interaction: ButtonInteraction, cl
 
     console.log(`✅ ${playerName} chose ${choice.toUpperCase()} in game ${gameId}`);
 
-    // Send confirmation to the player (ephemeral)
-    const emoji = choice === 'split' ? '🤝' : '💀';
+    // Send SECRET confirmation (DON'T reveal what they chose!)
     await interaction.followUp({
-      content: `${emoji} **${playerName}**, you chose **${choice.toUpperCase()}**!\nYour choice has been recorded.`,
+      content: `✅ **${playerName}**, your choice has been recorded!\n🤫 Shh! Keep it secret until the game ends...`,
       ephemeral: true
     });
 
