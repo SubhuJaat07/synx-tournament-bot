@@ -89,45 +89,30 @@ async function recoverGameFromCache(
         const updatedGame = gameCache.get(game.id);
         if (!updatedGame || updatedGame.status === 'completed') return;
 
-        // Calculate results from cached choices
-        const { calculateResultFromCache, completeGameInCacheAndDb } = await import('../cache/cacheManager.ts');
-        const { calculateAndShowResultsFromCache } = await import('../utils/results.ts');
-        
-        const result = calculateResultFromCache(updatedGame);
-        
-        // Complete in cache + async DB
-        await completeGameInCacheAndDb(game.id, {
-          winnerId: result.winner_id || undefined,
-          winnerName: result.winner_username || undefined,
-          resultType: result.result_type,
-          prizeShare1: result.player1_prize_share,
-          prizeShare2: result.player2_prize_share,
-        });
-
-        // Try to notify channel
+        // Get channel for normal results
         const channel = await client.channels.fetch(game.channelId).catch(() => null);
-        if (channel && 'send' in channel) {
-          const config: RecoveryConfig = {
-            player1: { id: updatedGame.playerId1, username: updatedGame.playerName1 },
-            player2: { id: updatedGame.playerId2, username: updatedGame.playerName2 },
-            prizeName: updatedGame.prizeName,
-            prizeValue: updatedGame.prizeValue,
-            prizeDescription: updatedGame.prizeDescription,
-            timer: updatedGame.timerSeconds,
-            resultMode: updatedGame.resultMode,
-          };
+        if (!channel || !('send' in channel)) return;
+        
+        const config = {
+          player1: { id: updatedGame.playerId1, username: updatedGame.playerName1 },
+          player2: { id: updatedGame.playerId2, username: updatedGame.playerName2 },
+          prizeName: updatedGame.prizeName,
+          prizeValue: updatedGame.prizeValue,
+          prizeDescription: updatedGame.prizeDescription,
+          timer: updatedGame.timerSeconds,
+          resultMode: updatedGame.resultMode,
+        };
+        
+        // Use NORMAL results function (same as regular game end - no "recovery" message!)
+        const { calculateAndShowResultsFromCache } = await import('../utils/results.ts');
+        await calculateAndShowResultsFromCache(
+          { channel } as any, 
+          updatedGame, 
+          config, 
+          true
+        );
 
-          await channel.send({
-            content: `🔄 **Bot Restart Detected!**\nShowing results for game between <@${updatedGame.playerId1}> and <@${updatedGame.playerId2}>...`,
-            embeds: [createRecoveryEmbed(updatedGame, result)],
-          });
-          
-          await channel.send({
-            content: createRecoveryAnnouncement(updatedGame, result),
-          });
-        }
-
-        console.log(`✅ Expired game ${game.id} completed`);
+        console.log(`✅ Expired game ${game.id} completed silently`);
         
       } catch (timerError) {
         console.error(`Error processing expired game ${game.id}:`, timerError);
@@ -153,26 +138,31 @@ async function recoverGameFromCache(
       
       if (currentGame && currentGame.status !== 'completed' && currentGame.status !== 'cancelled') {
         const { calculateResultFromCache, completeGameInCacheAndDb } = await import('../cache/cacheManager.ts');
+        const { calculateAndShowResultsFromCache } = await import('../utils/results.ts');
         
-        const result = calculateResultFromCache(currentGame);
-        
-        // Complete in cache + async DB
-        await completeGameInCacheAndDb(currentGame.id, {
-          winnerId: result.winner_id || undefined,
-          winnerName: result.winner_username || undefined,
-          resultType: result.result_type,
-          prizeShare1: result.player1_prize_share,
-          prizeShare2: result.player2_prize_share,
-        });
-
-        // Notify channel
+        // Get channel for results
         const channel = await client.channels.fetch(currentGame.channelId).catch(() => null);
-        if (channel && 'send' in channel) {
-          await channel.send({
-            content: `⏰ **Time's Up!** (Recovered after restart)\n${result.description}`,
-            embeds: [createRecoveryResultEmbed(currentGame, result)],
-          });
-        }
+        if (!channel || !('send' in channel)) return;
+        
+        // Create fake interaction-like object for results
+        const config = {
+          player1: { id: currentGame.playerId1, username: currentGame.playerName1 },
+          player2: { id: currentGame.playerId2, username: currentGame.playerName2 },
+          prizeName: currentGame.prizeName,
+          prizeValue: currentGame.prizeValue,
+          prizeDescription: currentGame.prizeDescription,
+          timer: currentGame.timerSeconds,
+          resultMode: currentGame.resultMode,
+        };
+        
+        // Use NORMAL results function (same as regular game end!)
+        // Pass channel as interaction substitute
+        await calculateAndShowResultsFromCache(
+          { channel } as any, 
+          currentGame, 
+          config, 
+          true
+        );
       }
     } catch (error) {
       console.error(`Error in recovery timer for game ${game.id}:`, error);
