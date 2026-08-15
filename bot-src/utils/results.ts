@@ -301,6 +301,35 @@ function createResultsEmbedFromCache(
 }
 
 /**
+ * Calculate prize share display (e.g., "10" + 50% = "5 Coins")
+ */
+function calculatePrizeShare(prizeValue: string | null | undefined, percentage: number): string {
+  if (!prizeValue) return `${percentage}%`;
+  
+  // Try to parse numeric value (handles "10", "100K", "5000", etc.)
+  const numMatch = prizeValue.match(/^(\d+(?:\.\d+)?)([KkMmBb]?)/);
+  if (numMatch) {
+    let num = parseFloat(numMatch[1]);
+    const suffix = numMatch[2]?.toUpperCase() || '';
+    
+    // Apply percentage
+    num = (num * percentage) / 100;
+    
+    // Format back
+    let result: string;
+    if (num % 1 === 0) {
+      result = Math.round(num).toString();
+    } else {
+      result = num.toFixed(2).replace(/\.?0+$/, '');
+    }
+    
+    return `${result}${suffix}`;
+  }
+  
+  return `${percentage}% of ${prizeValue}`;
+}
+
+/**
  * Create SIMPLE announcement message from cached data
  */
 function createAnnouncementMessageFromCache(game: CachedGame, result: GameResult): string {
@@ -329,14 +358,20 @@ function createAnnouncementMessageFromCache(game: CachedGame, result: GameResult
     case 'no_choice_steal':
       return `🏆 **<@${game.playerId2}>** takes **${prizeDisplay}** by default!\n\n⚠️ **<@${game.playerId1}>** didn't choose anything - auto-forfeit!`;
     
-    case 'no_choice_split':
-      return `🤝 **<@${game.playerId2}>** chose to **SPLIT**! Gets **50%** of **${prizeDisplay}**!\n\n⏰ <@${game.playerId1}> didn't respond - remaining **50%** carries over to next tournament!`;
+    case 'no_choice_split': {
+      const halfPrize = calculatePrizeShare(game.prizeValue, 50) + (game.prizeName ? ` ${game.prizeName}` : '');
+      const carryOver = calculatePrizeShare(game.prizeValue, 50) + (game.prizeName ? ` ${game.prizeName}` : '');
+      return `🤝 **<@${game.playerId2}>** chose to **SPLIT**! Gets **${halfPrize}**!\n\n⏰ <@${game.playerId1}> didn't respond - **${carryOver}** carries over to next tournament!`;
+    }
     
     case 'steal_no_choice':
       return `🏆 **<@${game.playerId1}>** takes **${prizeDisplay}** by default!\n\n⚠️ **<@${game.playerId2}>** didn't choose anything - auto-forfeit!`;
     
-    case 'split_no_choice':
-      return `🤝 **<@${game.playerId1}>** chose to **SPLIT**! Gets **50%** of **${prizeDisplay}**!\n\n⏰ <@${game.playerId2}> didn't respond - remaining **50%** carries over to next tournament!`;
+    case 'split_no_choice': {
+      const halfPrize = calculatePrizeShare(game.prizeValue, 50) + (game.prizeName ? ` ${game.prizeName}` : '');
+      const carryOver = calculatePrizeShare(game.prizeValue, 50) + (game.prizeName ? ` ${game.prizeName}` : '');
+      return `🤝 **<@${game.playerId1}>** chose to **SPLIT**! Gets **${halfPrize}**!\n\n⏰ <@${game.playerId2}> didn't respond - **${carryOver}** carries over to next tournament!`;
+    }
     
     default:
       return `🎮 **Game Over!** Check the embed above for results.`;
