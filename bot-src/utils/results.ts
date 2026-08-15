@@ -292,15 +292,21 @@ function createResultsEmbedFromCache(
     historyText = timeline.join('\n');
   }
 
-  // Build MINIMAL result embed - ONLY TIMELINE!
+  // Build result embed - Game Over! + Timeline (if exists)
   const embed = new EmbedBuilder()
     .setColor(color)
-    .setTitle(`${result.emoji} Game Over!`)
-    .addFields({
+    .setTitle(`${result.emoji} Game Over!`);
+  
+  // Only add timeline field if there IS history (not "No choices recorded")
+  if (game.choiceHistory && game.choiceHistory.length > 0) {
+    embed.addFields({
       name: '📜 Choice Timeline',
       value: historyText,
       inline: false,
-    })
+    });
+  }
+  
+  embed
     .setFooter({ text: 'Synx Tournaments' })
     .setTimestamp(new Date());
 

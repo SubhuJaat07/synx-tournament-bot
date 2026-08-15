@@ -272,6 +272,12 @@ async function startLiveCountdown(
       let progressBar = '';
       let thumbnailUrl: string | null = null; // Animated GIF on RIGHT SIDE!
       
+      // ❤️ Random Heartbeat GIFs for 30-11s phase (user will add more!)
+      const heartbeatGifs = [
+        'https://media.giphy.com/media/JQRfa8kPwx5xgc51jG/giphy.gif', // User's GIF
+        // Add more heartbeat GIFs here - user will provide 3-4 total
+      ];
+      
       if (timeRemaining <= 30 && timeRemaining > 10) {
         // ⏱️ Last 30s-11s - User's custom 30s countdown GIF on RIGHT!
         embedColor = 0xffcc00;
@@ -280,8 +286,9 @@ async function startLiveCountdown(
         const empty = '░'.repeat(10 - progress);
         progressBar = `\n\`${filled}${empty}\` **${timeRemaining}s**`;
         timerText = `⚡ **${timeDisplay} remaining**${progressBar}`;
-        // ⏱️ Abstract timer animation (NOT countdown - avoids looping confusion!)
-        thumbnailUrl = 'https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif';
+        // ❤️ Random heartbeat animation (NOT countdown - loops naturally!)
+        const randomHeartbeat = heartbeatGifs[Math.floor(Math.random() * heartbeatGifs.length)];
+        thumbnailUrl = randomHeartbeat;
       } else if (timeRemaining <= 10 && timeRemaining > 5) {
         // 🔥 Last 10s-6s - Red urgent + fire animation on RIGHT!
         embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xff3333;

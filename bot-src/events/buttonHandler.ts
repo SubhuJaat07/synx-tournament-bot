@@ -227,6 +227,12 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     let timerText = `⏳ **${timeDisplay} remaining**`;
     let thumbnailUrl: string | null = null;
     
+    // ❤️ Random Heartbeat GIFs for 30-11s phase (user will add more!)
+    const heartbeatGifs = [
+      'https://media.giphy.com/media/JQRfa8kPwx5xgc51jG/giphy.gif', // User's GIF
+      // Add more heartbeat GIFs here - user will provide 3-4 total
+    ];
+    
     if (timeRemaining <= 30 && timeRemaining > 10) {
       // ⏱️ Abstract timer animation (NOT countdown - avoids looping confusion!)
       embedColor = 0xffcc00;
@@ -234,8 +240,9 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       const filled = '█'.repeat(progress);
       const empty = '░'.repeat(10 - progress);
       timerText = `⚡ **${timeDisplay} remaining**\n\`${filled}${empty}\` **${timeRemaining}s**`;
-      // Clock animation (loops naturally, no confusing numbers!)
-      thumbnailUrl = 'https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif';
+      // ❤️ Random heartbeat animation (NOT countdown - loops naturally!)
+      const randomHeartbeat = heartbeatGifs[Math.floor(Math.random() * heartbeatGifs.length)];
+      thumbnailUrl = randomHeartbeat;
     } else if (timeRemaining <= 10 && timeRemaining > 5) {
       embedColor = 0xff0000;
       const progress = Math.floor((timeRemaining / 10) * 10);
