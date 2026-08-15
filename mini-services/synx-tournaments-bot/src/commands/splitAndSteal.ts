@@ -92,9 +92,9 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
     // Create buttons for both players
     const actionRow = createActionRow(gameId);
 
-    // Send the game message
+    // Send the game message (PING PLAYERS OUTSIDE EMBED!)
     const message = await interaction.editReply({
-      content: '🎮 **Split & Steal** game started!',
+      content: `🎮 **Split & Steal** started! <@${config.player1.id}> vs <@${config.player2.id}>\n👆 **Your turn! Choose SPLIT or STEAL!**`,
       embeds: [embed],
       components: [actionRow],
     });
@@ -116,6 +116,7 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
       endsAt: new Date(now.getTime() + timerSeconds * 1000),
       resultMode: resultMode,
       status: 'in_progress',
+      choiceHistory: [], // Track choice changes!
       createdBy: interaction.user.id,
       guildId: interaction.guildId || undefined,
       createdAt: now,
@@ -155,19 +156,25 @@ function createGameEmbed(config: GameConfig, timerSeconds: number, resultMode: s
     : '';
 
   const modeText = resultMode === 'both_clicked' 
-    ? '⚡ Results when both players choose'
-    : '🕐 Results after timer ends';
+    ? '⚡ Results when both choose'
+    : '⏱️ Timer running...';
 
   return new EmbedBuilder()
     .setColor(0x00ff88)
     .setTitle('🎮 Split & Steal Tournament')
     .setDescription(
       `**Choose your fate!**${prizeInfo}${prizeDesc}\n\n` +
-      `⏱️ **Timer:** ${timerSeconds} seconds\n` +
       `${modeText}\n\n` +
       `---\n\n` +
-      `👤 **Player 1:** <@${config.player1.id}>\n` +
-      `👤 **Player 2:** <@${config.player2.id}>`
+      `👤 **Player 1:** \`${config.player1.username}\`\n` +
+      `👤 **Player 2:** \`${config.player2.username}\``
+    )
+    .addFields(
+      {
+        name: '⏳ Status',
+        value: '⏳ Waiting for choices...',
+        inline: false,
+      }
     )
     .setFooter({ text: 'Synx Tournaments' })
     .setTimestamp(new Date());

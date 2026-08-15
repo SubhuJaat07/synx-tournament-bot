@@ -43,6 +43,14 @@ export interface CachedGame {
   chosenAt1?: Date;
   chosenAt2?: Date;
   
+  // Choice history (tracks changes over time!)
+  choiceHistory: Array<{
+    playerId: string;
+    playerName: string;
+    choice: 'split' | 'steal';
+    timestamp: Date;
+  }>;
+  
   // Results (filled on completion)
   winnerId?: string;
   winnerName?: string;
@@ -264,6 +272,7 @@ export function dbToCache(dbGame: any): CachedGame {
     choice2: dbGame.player2_choice || undefined,
     chosenAt1: dbGame.player1_chosen_at ? new Date(dbGame.player1_chosen_at) : undefined,
     chosenAt2: dbGame.player2_chosen_at ? new Date(dbGame.player2_chosen_at) : undefined,
+    choiceHistory: [], // Empty history for loaded games
     winnerId: dbGame.winner_id || undefined,
     winnerName: dbGame.winner_username || undefined,
     resultType: dbGame.result_type as GameResultType | undefined,
