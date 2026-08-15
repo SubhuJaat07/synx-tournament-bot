@@ -262,14 +262,29 @@ function createResultsEmbedFromCache(
       color = 0x00ff88;
   }
 
-  // Build choice history timeline string
-  let historyText = 'No changes';
+  // Build choice history - ONLY SHOW FINAL CHOICE for each player!
+  let historyText = '';
+  
   if (game.choiceHistory && game.choiceHistory.length > 0) {
-    const timeline = game.choiceHistory.map((h, i) => {
+    // Get ONLY the last (final) choice for each player
+    const finalChoices: { [playerId: string]: typeof game.choiceHistory[0] } = {};
+    
+    for (const entry of game.choiceHistory) {
+      finalChoices[entry.playerId] = entry; // Overwrite with latest
+    }
+    
+    // Convert to array and format
+    const finalTimeline = Object.values(finalChoices).map((h) => {
       const time = h.timestamp.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      return `${i + 1}. **<@${h.playerId}>** chose **${h.choice.toUpperCase()}** (${time})`;
+      return `**<@${h.playerId}>** chose **${h.choice.toUpperCase()}** (${time})`;
     });
-    historyText = timeline.join('\n');
+    
+    historyText = finalTimeline.join('\n');
+  }
+  
+  // If no choices at all
+  if (!historyText) {
+    historyText = 'No choices recorded';
   }
 
   // Build simple embed with choices + history
