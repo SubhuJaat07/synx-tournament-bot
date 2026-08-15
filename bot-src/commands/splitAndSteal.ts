@@ -281,7 +281,7 @@ async function startLiveCountdown(
         progressBar = `\n\`${filled}${empty}\` **${timeRemaining}s**`;
         timerText = `⚡ **${timeDisplay} remaining**${progressBar}`;
         // 🎬 30-second countdown animation on RIGHT side!
-        thumbnailUrl = 'https://media.giphy.com/media/du3J3cXyzhj75IOgvA/giphy.gif';
+        thumbnailUrl = 'https://media.giphy.com/media/3oKIPnAiaMCws8nOsE/giphy.gif';
       } else if (timeRemaining <= 10 && timeRemaining > 5) {
         // 🔥 Last 10s-6s - Red urgent + fire animation on RIGHT!
         embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xff3333;
@@ -320,12 +320,12 @@ async function startLiveCountdown(
         .addFields(
           {
             name: `**${game.playerName1}** ${p1Status}`,
-            value: '⠀', // Thin space (no extra blank line!)
+            value: '\u200b', // Zero-width space (NO blank line!)
             inline: true,
           },
           {
             name: `**${game.playerName2}** ${p2Status}`,
-            value: '⠀', // Thin space (no extra blank line!)
+            value: '\u200b', // Zero-width space (NO blank line!)
             inline: true,
           }
         )
