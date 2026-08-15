@@ -25,7 +25,7 @@ if (!CLIENT_ID) {
 }
 
 // Create Discord client with required intents
-const client = new Client({
+export const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
@@ -36,6 +36,8 @@ const client = new Client({
 
 // Store active game timers
 export const activeTimers = new Map<string, NodeJS.Timeout>();
+// Store active interval timers for live countdown updates
+export const activeIntervals = new Map<string, NodeJS.Timeout>();
 
 // When bot is ready - PRELOAD CACHE for <50ms response
 client.once('ready', async () => {
@@ -245,6 +247,13 @@ process.on('SIGINT', async () => {
     console.log(`⏰ Cleared timer for game: ${gameId}`);
   }
   activeTimers.clear();
+  
+  // Clear all active intervals (live countdown timers)
+  for (const [gameId, interval] of activeIntervals) {
+    clearInterval(interval);
+    console.log(`⏱️ Cleared interval for game: ${gameId}`);
+  }
+  activeIntervals.clear();
   
   // Final stats
   const finalMetrics = getCacheMetrics();

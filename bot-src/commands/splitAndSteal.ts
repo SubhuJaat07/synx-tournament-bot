@@ -5,12 +5,13 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ChannelType
+  ChannelType,
+  TextChannel
 } from 'discord.js';
 import { gameCache, CachedGame } from '../cache/gameCache.ts';
 import { createGameInCacheAndDb } from '../cache/cacheManager.ts';
 import { v4 as uuidv4 } from 'uuid';
-import { activeTimers } from '../index.ts';
+import { activeTimers, activeIntervals } from '../index.ts';
 
 interface GameConfig {
   player1: User;
@@ -132,6 +133,9 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
 
     // Start the timer
     startGameTimer(gameId, interaction, config, timerSeconds, resultMode);
+    
+    // ⏱️ Start LIVE countdown timer (updates every 4 seconds)
+    startLiveCountdown(gameId, interaction.channelId, message.id);
 
   } catch (error) {
     console.error('Error in splitandsteal command:', error);
@@ -237,4 +241,108 @@ async function startGameTimer(
 
   activeTimers.set(gameId, timer);
   console.log(`⏰ Timer started for game ${gameId}: ${timerSeconds}s`);
+}
+
+/**
+ * ⏱️ LIVE Countdown Timer - Updates embed every 4 seconds with remaining time
+ */
+async function startLiveCountdown(
+  gameId: string,
+  channelId: string,
+  messageId: string
+) {
+  // Clear any existing interval for this game
+  if (activeIntervals.has(gameId)) {
+    clearInterval(activeIntervals.get(gameId));
+  }
+
+  // Get client for fetching channel/message
+  const { client } = await import('../index.ts');
+  
+  const interval = setInterval(async () => {
+    try {
+      // Get game from cache
+      const game = gameCache.get(gameId);
+      
+      if (!game || game.status === 'completed' || game.status === 'cancelled') {
+        // Game ended - clear this interval
+        clearInterval(interval);
+        activeIntervals.delete(gameId);
+        console.log(`⏱️ Stopped live countdown for game ${gameId} (game ended)`);
+        return;
+      }
+
+      // Calculate time remaining
+      const now = new Date();
+      const timeRemaining = Math.max(0, Math.floor((game.endsAt.getTime() - now.getTime()) / 1000));
+      
+      if (timeRemaining <= 0) {
+        // Time's up - clear interval (timer callback will handle results)
+        clearInterval(interval);
+        activeIntervals.delete(gameId);
+        console.log(`⏱️ Stopped live countdown for game ${gameId} (time up)`);
+        return;
+      }
+
+      // Format time display
+      const minutes = Math.floor(timeRemaining / 60);
+      const seconds = timeRemaining % 60;
+      const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+      
+      // Get player status (secret!)
+      const p1Status = game.choice1 ? '✅ **Chosen!** 🤫' : '⏳ Waiting...';
+      const p2Status = game.choice2 ? '✅ **Chosen!** 🤫' : '⏳ Waiting...';
+      const choiceCount = (game.choice1 ? 1 : 0) + (game.choice2 ? 1 : 0);
+
+      // Create updated embed with live timer
+      const liveEmbed = new EmbedBuilder()
+        .setColor(0xffaa00)
+        .setTitle('🎮 Split & Steal - In Progress')
+        .setDescription(
+          `**Choices are being made...**\n\n` +
+          `💎 **Prize:** ${game.prizeName || 'Mystery Prize'}${game.prizeValue ? ` (${game.prizeValue})` : ''}\n\n` +
+          `---`
+        )
+        .addFields(
+          {
+            name: `<@${game.playerId1}>`,
+            value: p1Status,
+            inline: true,
+          },
+          {
+            name: `<@${game.playerId2}>`,
+            value: p2Status,
+            inline: true,
+          },
+          {
+            name: '⏱️ Time Left',
+            value: `⏳ **${timeDisplay}** remaining`,
+            inline: false,
+          },
+          {
+            name: '📊 Progress',
+            value: `${'🟩'.repeat(choiceCount)}${'⬜'.repeat(2 - choiceCount)} ${choiceCount}/2 chosen`,
+            inline: false,
+          }
+        )
+        .setFooter({ text: 'Synx Tournaments • Live countdown' })
+        .setTimestamp(new Date());
+
+      // Fetch channel and update message
+      const channel = await client.channels.fetch(channelId).catch(() => null);
+      if (channel && channel.isTextBased()) {
+        const msg = await channel.messages.fetch(messageId).catch(() => null);
+        if (msg) {
+          await msg.edit({ embeds: [liveEmbed] }).catch(err => 
+            console.error('Failed to update live countdown:', err?.message)
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error in live countdown update:', error);
+    }
+  }, 4000); // Update every 4 seconds
+
+  activeIntervals.set(gameId, interval);
+  console.log(`⏱️ Live countdown started for game ${gameId} (updates every 4s)`);
 }
