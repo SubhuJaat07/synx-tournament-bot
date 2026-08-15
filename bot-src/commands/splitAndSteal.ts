@@ -272,10 +272,15 @@ async function startLiveCountdown(
       let progressBar = '';
       let thumbnailUrl: string | null = null; // Animated GIF on RIGHT SIDE!
       
-      // ❤️ Random Heartbeat GIFs for 30-11s phase (user will add more!)
+      // ❤️ Random Heartbeat GIFs for 30-11s phase (7 total - random each second!)
       const heartbeatGifs = [
-        'https://media.giphy.com/media/JQRfa8kPwx5xgc51jG/giphy.gif', // User's GIF
-        // Add more heartbeat GIFs here - user will provide 3-4 total
+        'https://media.giphy.com/media/JQRfa8kPwx5xgc51jG/giphy.gif', // User's 2D heartbeat
+        'https://media.giphy.com/media/ZOStzpF9H5syI/giphy.gif',      // Crush butterflies
+        'https://media.giphy.com/media/6UsPdACZamjok/giphy.gif',       // Heart pulse
+        'https://media.giphy.com/media/YAIOuXv2zYDW8/giphy.gif',       // Heartbeat line
+        'https://media.giphy.com/media/S9E88u47Lxc3uqhsse/giphy.gif',  // Health visuals ECG
+        'https://media.giphy.com/media/Oozt5b5IIWWUKJjknH/giphy.gif',   // Love heartbeat
+        'https://media.giphy.com/media/oStBM1ANst52U/giphy.gif'        // Biology science art
       ];
       
       if (timeRemaining <= 30 && timeRemaining > 10) {
