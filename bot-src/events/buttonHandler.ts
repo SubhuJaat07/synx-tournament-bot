@@ -227,15 +227,16 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     let timerText = `⏳ **${timeDisplay} remaining**`;
     let thumbnailUrl: string | null = null;
     
-    if (timeRemaining <= 30 && timeRemaining > 10) {
+    if (timeRemaining <= 30 && timeRemaining > 15) {
+      // ⏱️ Last 30s-16s - User's custom 30s countdown GIF on RIGHT!
       embedColor = 0xffcc00;
       const progress = Math.floor((timeRemaining / 30) * 10);
       const filled = '█'.repeat(progress);
       const empty = '░'.repeat(10 - progress);
       timerText = `⚡ **${timeDisplay} remaining**\n\`${filled}${empty}\` **${timeRemaining}s**`;
-      // 🎬 Countdown animation on RIGHT side (thumbnail)!
-      thumbnailUrl = 'https://media.giphy.com/media/3oKIPnAiaMCws8nOsE/giphy.gif';
-    } else if (timeRemaining <= 10 && timeRemaining > 5) {
+      // 🎬 User's 30-second countdown animation on RIGHT side!
+      thumbnailUrl = 'https://media.giphy.com/media/hJwGeT4iFhGIPLNlbk/giphy.gif';
+    } else if (timeRemaining <= 15 && timeRemaining > 10) {
       embedColor = 0xff0000;
       const progress = Math.floor((timeRemaining / 10) * 10);
       const filled = '🔴'.repeat(Math.ceil(progress / 2));

@@ -272,17 +272,17 @@ async function startLiveCountdown(
       let progressBar = '';
       let thumbnailUrl: string | null = null; // Animated GIF on RIGHT SIDE!
       
-      if (timeRemaining <= 30 && timeRemaining > 10) {
-        // ⚡ Last 30s-11s - Yellow warning + progress bar + countdown GIF on RIGHT!
+      if (timeRemaining <= 30 && timeRemaining > 15) {
+        // ⏱️ Last 30s-16s - User's custom 30s countdown GIF on RIGHT!
         embedColor = 0xffcc00;
         const progress = Math.floor((timeRemaining / 30) * 10);
         const filled = '█'.repeat(progress);
         const empty = '░'.repeat(10 - progress);
         progressBar = `\n\`${filled}${empty}\` **${timeRemaining}s**`;
         timerText = `⚡ **${timeDisplay} remaining**${progressBar}`;
-        // 🎬 30-second countdown animation on RIGHT side!
-        thumbnailUrl = 'https://media.giphy.com/media/3oKIPnAiaMCws8nOsE/giphy.gif';
-      } else if (timeRemaining <= 10 && timeRemaining > 5) {
+        // 🎬 User's 30-second countdown animation on RIGHT side!
+        thumbnailUrl = 'https://media.giphy.com/media/hJwGeT4iFhGIPLNlbk/giphy.gif';
+      } else if (timeRemaining <= 15 && timeRemaining > 10) {
         // 🔥 Last 10s-6s - Red urgent + fire animation on RIGHT!
         embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xff3333;
         const progress = Math.floor((timeRemaining / 10) * 10);
