@@ -262,32 +262,18 @@ function createResultsEmbedFromCache(
       color = 0x00ff88;
   }
 
-  // Build choice history - ONLY SHOW FINAL CHOICE for each player!
-  let historyText = '';
+  // Build choice history - SHOW FULL TIMELINE with all changes!
+  let historyText = 'No choices recorded';
   
   if (game.choiceHistory && game.choiceHistory.length > 0) {
-    // Get ONLY the last (final) choice for each player
-    const finalChoices: { [playerId: string]: typeof game.choiceHistory[0] } = {};
-    
-    for (const entry of game.choiceHistory) {
-      finalChoices[entry.playerId] = entry; // Overwrite with latest
-    }
-    
-    // Convert to array and format
-    const finalTimeline = Object.values(finalChoices).map((h) => {
+    const timeline = game.choiceHistory.map((h, i) => {
       const time = h.timestamp.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      return `**<@${h.playerId}>** chose **${h.choice.toUpperCase()}** (${time})`;
+      return `${i + 1}. **<@${h.playerId}>** chose **${h.choice.toUpperCase()}** (${time})`;
     });
-    
-    historyText = finalTimeline.join('\n');
-  }
-  
-  // If no choices at all
-  if (!historyText) {
-    historyText = 'No choices recorded';
+    historyText = timeline.join('\n');
   }
 
-  // Build simple embed with choices + history
+  // Build CLEAN result embed - only choices + timeline!
   const embed = new EmbedBuilder()
     .setColor(color)
     .setTitle(`${result.emoji} Game Over!`)
@@ -313,7 +299,7 @@ function createResultsEmbedFromCache(
     });
   }
 
-  // Add choice history timeline
+  // Add FULL choice history timeline (with all changes!)
   embed.addFields({
     name: '📜 Choice Timeline',
     value: historyText,
