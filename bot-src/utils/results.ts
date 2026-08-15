@@ -272,6 +272,7 @@ function createResultsEmbedFromCache(
   }
 
   // Build choice history - SHOW FULL TIMELINE with first choice vs updates!
+  // 🛡️ SAFETY: Discord field value limit = 1024 chars! Must truncate if too long.
   let historyText = 'No choices recorded';
   
   if (game.choiceHistory && game.choiceHistory.length > 0) {
@@ -289,7 +290,39 @@ function createResultsEmbedFromCache(
       const action = isFirstChoice ? 'chose' : 'updated choice to';
       return `${i + 1}. **<@${h.playerId}>** ${action} **${h.choice.toUpperCase()}** (${time})`;
     });
-    historyText = timeline.join('\n');
+    
+    // Join all entries
+    let fullHistoryText = timeline.join('\n');
+    
+    // 🛡️ TRUNCATE if exceeds 950 chars (leave 74 char buffer for "..." + count)
+    const MAX_FIELD_VALUE = 1024;
+    const TRUNCATE_AT = 950; // Safe limit
+    
+    if (fullHistoryText.length > TRUNCATE_AT) {
+      // Find how many entries we can fit
+      let currentLength = 0;
+      let entriesToFit = 0;
+      
+      for (let i = 0; i < timeline.length; i++) {
+        const entryLength = timeline[i].length + 1; // +1 for \n
+        if (currentLength + entryLength > TRUNCATE_AT - 50) { // -50 for "... (X more)" text
+          break;
+        }
+        currentLength += entryLength;
+        entriesToFit++;
+      }
+      
+      // Build truncated version
+      const visibleEntries = timeline.slice(0, entriesToFit);
+      const hiddenCount = timeline.length - entriesToFit;
+      
+      historyText = visibleEntries.join('\n');
+      historyText += `\n\n... *and ${hiddenCount} more choice(s)*`;
+      
+      console.log(`⚠️ Timeline truncated: ${timeline.length} entries → ${entriesToFit} shown, ${hiddenCount} hidden`);
+    } else {
+      historyText = fullHistoryText;
+    }
   }
 
   // Build result embed - Game Over! + Timeline (if exists)
