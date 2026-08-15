@@ -22,6 +22,29 @@ interface GameConfig {
   resultMode?: string | null;
 }
 
+// Parse flexible timer format: "30s", "2m", "1h", "1d", or just seconds
+function parseTimerDuration(timerStr: string | null | undefined): number {
+  if (!timerStr) return 60; // Default 60 seconds
+  
+  const str = timerStr.trim().toLowerCase();
+  
+  // Match patterns like "30s", "2m", "1h", "1d"
+  const match = str.match(/^(\d+)(s|m|h|d)?$/);
+  
+  if (!match) return 60; // Default if invalid format
+  
+  const value = parseInt(match[1]);
+  const unit = match[2] || 's'; // Default to seconds
+  
+  switch (unit) {
+    case 's': return value;
+    case 'm': return value * 60;
+    case 'h': return value * 3600;
+    case 'd': return value * 86400;
+    default: return value;
+  }
+}
+
 export async function handleSplitStealCommand(interaction: ChatInputCommandInteraction) {
   // Defer reply to give time for processing
   await interaction.deferReply();
@@ -34,7 +57,7 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
       prizeName: interaction.options.getString('prize_name'),
       prizeValue: interaction.options.getString('prize_value'),
       prizeDescription: interaction.options.getString('prize_description'),
-      timer: interaction.options.getInteger('timer'),
+      timer: parseTimerDuration(interaction.options.getString('timer')),
       resultMode: interaction.options.getString('result_mode'),
     };
 
@@ -55,8 +78,8 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
       return;
     }
 
-    // Set default values
-    const timerSeconds = config.timer || parseInt(process.env.DEFAULT_TIMER_SECONDS || '60');
+    // Set default values (timer already parsed!)
+    const timerSeconds = config.timer || 60;
     const resultMode = (config.resultMode as 'timer_end' | 'both_clicked') || 'timer_end';
 
     // Generate unique game ID
@@ -169,25 +192,13 @@ function createActionRow(gameId: string): ActionRowBuilder<ButtonBuilder> {
   return new ActionRowBuilder<ButtonBuilder>()
     .addComponents(
       new ButtonBuilder()
-        .setCustomId(`split_${gameId}_p1`)
+        .setCustomId(`split_${gameId}`)
         .setLabel('🤝 SPLIT')
-        .setStyle(ButtonStyle.Success)
-        .setEmoji('🤝'),
+        .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
-        .setCustomId(`steal_${gameId}_p1`)
+        .setCustomId(`steal_${gameId}`)
         .setLabel('💀 STEAL')
         .setStyle(ButtonStyle.Danger)
-        .setEmoji('💀'),
-      new ButtonBuilder()
-        .setCustomId(`split_${gameId}_p2`)
-        .setLabel('🤝 SPLIT')
-        .setStyle(ButtonStyle.Success)
-        .setEmoji('🤝'),
-      new ButtonBuilder()
-        .setCustomId(`steal_${gameId}_p2`)
-        .setLabel('💀 STEAL')
-        .setStyle(ButtonStyle.Danger)
-        .setEmoji('💀')
     );
 }
 
