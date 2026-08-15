@@ -186,7 +186,7 @@ export async function calculateAndShowResultsFromCache(
       : await interaction.fetchReply();
 
     const editedMessage = await message.edit({
-      content: `${result.emoji} **GAME OVER!** ${isTimerExpiry ? '(Time\'s up!)' : ''}`,
+      content: null, // No extra text - embed shows "Game Over" already!
       embeds: [embed],
       components: [], // Remove all buttons
     });
