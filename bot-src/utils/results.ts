@@ -264,13 +264,23 @@ function createResultsEmbedFromCache(
       color = 0x00ff88;
   }
 
-  // Build choice history - SHOW FULL TIMELINE with all changes!
+  // Build choice history - SHOW FULL TIMELINE with first choice vs updates!
   let historyText = 'No choices recorded';
   
   if (game.choiceHistory && game.choiceHistory.length > 0) {
+    // Track per-player first choices
+    const playerFirstChoices = new Map<string, boolean>();
+    
     const timeline = game.choiceHistory.map((h, i) => {
       const time = h.timestamp.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      return `${i + 1}. **<@${h.playerId}>** chose **${h.choice.toUpperCase()}** (${time})`;
+      
+      // Check if this player has chosen before
+      const isFirstChoice = !playerFirstChoices.has(h.playerId);
+      playerFirstChoices.set(h.playerId, true);
+      
+      // Show "chose" for first time, "updated choice to" for changes
+      const action = isFirstChoice ? 'chose' : 'updated choice to';
+      return `${i + 1}. **<@${h.playerId}>** ${action} **${h.choice.toUpperCase()}** (${time})`;
     });
     historyText = timeline.join('\n');
   }
