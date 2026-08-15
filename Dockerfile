@@ -12,17 +12,20 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Copy bot package files first (better layer caching)
-COPY mini-services/synx-tournaments-bot/package.json \
-     mini-services/synx-tournaments-bot/bun.lock ./
+# Copy ENTIRE bot folder first (ensures all files are included)
+COPY mini-services/synx-tournaments-bot/ ./bot-files/
+
+# Move required files to working directory
+RUN mv bot-files/package.json . && \
+    mv bot-files/bun.lock . 2>/dev/null || true && \
+    mkdir -p src database && \
+    cp -r bot-files/src/* src/ 2>/dev/null || true && \
+    cp bot-files/tsconfig.json . 2>/dev/null || true && \
+    cp -r bot-files/database/* database/ 2>/dev/null || true && \
+    rm -rf bot-files
 
 # Install dependencies
-RUN bun install --frozen-lockfile --production=false
-
-# Copy bot source code
-COPY mini-services/synx-tournaments-bot/src ./src
-COPY mini-services/synx-tournaments-bot/tsconfig.json ./
-COPY mini-services/synx-tournaments-bot/database ./database
+RUN bun install --production=false
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
