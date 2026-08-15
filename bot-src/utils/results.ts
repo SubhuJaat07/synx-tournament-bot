@@ -340,37 +340,37 @@ function createAnnouncementMessageFromCache(game: CachedGame, result: GameResult
   
   switch (result.result_type) {
     case 'split_split':
-      return `🤝 **<@${game.playerId1}>** and **<@${game.playerId2}>** both chose to **SPLIT**!\n\n📦 **${prizeDisplay}** has been divided equally (**50-50**) between both players!`;
+      return `🤝 **<@${game.playerId1}>** and **<@${game.playerId2}>** both chose to **SPLIT**!\n📦 **${prizeDisplay}** has been divided equally (**50-50**) between both players!`;
     
     case 'steal_steal':
-      return `💀 Both **<@${game.playerId1}>** and **<@${game.playerId2}>** tried to **STEAL**!\n\n😢 **Nobody wins!** Both players were too greedy!\n\n💰 **${prizeDisplay}** will be used in the next tournament!`;
+      return `💀 Both **<@${game.playerId1}>** and **<@${game.playerId2}>** tried to **STEAL**!\n😢 **Nobody wins!** Both players were too greedy!\n💰 **${prizeDisplay}** will be used in the next tournament!`;
     
     case 'split_steal':
-      return `🏆 **<@${game.playerId2}>** stole **${prizeDisplay}**!\n\n💀 **<@${game.playerId1}>** chose to SPLIT but got betrayed!`;
+      return `🏆 **<@${game.playerId2}>** stole **${prizeDisplay}**!\n💀 **<@${game.playerId1}>** chose to SPLIT but got betrayed!`;
     
     case 'steal_split':
-      return `🏆 **<@${game.playerId1}>** stole **${prizeDisplay}**!\n\n💀 **<@${game.playerId2}>** chose to SPLIT but got betrayed!`;
+      return `🏆 **<@${game.playerId1}>** stole **${prizeDisplay}**!\n💀 **<@${game.playerId2}>** chose to SPLIT but got betrayed!`;
     
     // New no-choice cases
     case 'no_choice_no_choice':
       return `⏰ **Time's up!** Neither **<@${game.playerId1}>** nor **<@${game.playerId2}>** made a choice! 😴 Everyone was sleeping on the job! **${prizeDisplay}** carries over to next tournament!`;
     
     case 'no_choice_steal':
-      return `🏆 **<@${game.playerId2}>** stole **${prizeDisplay}**!\n\n⚠️ **<@${game.playerId1}>** didn't choose anything - auto-forfeit!`;
+      return `🏆 **<@${game.playerId2}>** stole **${prizeDisplay}**!\n⚠️ **<@${game.playerId1}>** didn't choose anything - auto-forfeit!`;
     
     case 'no_choice_split': {
       const halfPrize = calculatePrizeShare(game.prizeValue, 50) + (game.prizeName ? ` ${game.prizeName}` : '');
       const carryOver = calculatePrizeShare(game.prizeValue, 50) + (game.prizeName ? ` ${game.prizeName}` : '');
-      return `🤝 **<@${game.playerId2}>** chose to **SPLIT**! Gets **${halfPrize}**!\n\n⏰ <@${game.playerId1}> didn't respond - **${carryOver}** carries over to next tournament!`;
+      return `🤝 **<@${game.playerId2}>** chose to **SPLIT**! Gets **${halfPrize}**!\n⏰ <@${game.playerId1}> didn't respond - **${carryOver}** carries over to next tournament!`;
     }
     
     case 'steal_no_choice':
-      return `🏆 **<@${game.playerId1}>** stole **${prizeDisplay}**!\n\n⚠️ **<@${game.playerId2}>** didn't choose anything - auto-forfeit!`;
+      return `🏆 **<@${game.playerId1}>** stole **${prizeDisplay}**!\n⚠️ **<@${game.playerId2}>** didn't choose anything - auto-forfeit!`;
     
     case 'split_no_choice': {
       const halfPrize = calculatePrizeShare(game.prizeValue, 50) + (game.prizeName ? ` ${game.prizeName}` : '');
       const carryOver = calculatePrizeShare(game.prizeValue, 50) + (game.prizeName ? ` ${game.prizeName}` : '');
-      return `🤝 **<@${game.playerId1}>** chose to **SPLIT**! Gets **${halfPrize}**!\n\n⏰ <@${game.playerId2}> didn't respond - **${carryOver}** carries over to next tournament!`;
+      return `🤝 **<@${game.playerId1}>** chose to **SPLIT**! Gets **${halfPrize}**!\n⏰ <@${game.playerId2}> didn't respond - **${carryOver}** carries over to next tournament!`;
     }
     
     default:
