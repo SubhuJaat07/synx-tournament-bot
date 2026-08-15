@@ -247,12 +247,18 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       thumbnailUrl = 'https://media.giphy.com/media/j3gFfV7LHhUQU/giphy.gif';
     }
 
+    // 🎯 Build prize display - ONLY if prize exists!
+    let prizeText = '';
+    if (game.prizeValue || game.prizeName) {
+      prizeText = `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || ''}`.trim();
+    }
+
     const embed = new EmbedBuilder()
       .setColor(embedColor)
       .setTitle('🎮 Split & Steal - In Progress')
       .setThumbnail(thumbnailUrl)
       .setDescription(
-        `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}\n\n${timerText}`.trim()
+        `${prizeText}${prizeText ? '\n\n' : ''}${timerText}`.trim()
       )
       .addFields(
         {

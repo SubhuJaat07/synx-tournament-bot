@@ -94,16 +94,13 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
     const gameId = uuidv4();
     const now = new Date();
 
-    // Create initial embed message (pass display names)
-    const embed = createGameEmbed(config, timerSeconds, resultMode, player1DisplayName, player2DisplayName);
-
     // Create buttons for both players
     const actionRow = createActionRow(gameId);
 
-    // Send the game message (minimal format) - Use nicknames!
+    // 🎯 Send message WITHOUT embed first - countdown will add it!
+    // This prevents flicker from double-edit
     const message = await interaction.editReply({
-      content: `🎮 **Split & Steal** **${player1DisplayName}** vs **${player2DisplayName}**`,
-      embeds: [embed],
+      content: `🎮 **Split & Steal** <@${config.player1.id}> vs <@${config.player2.id}>`,
       components: [actionRow],
     });
 
@@ -155,46 +152,6 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
       console.error('Failed to edit reply:', editError);
     }
   }
-}
-
-function createGameEmbed(config: GameConfig, timerSeconds: number, resultMode: string, player1Name?: string, player2Name?: string): EmbedBuilder {
-  const prizeInfo = config.prizeName || config.prizeValue 
-    ? `💎 **Prize:** ${config.prizeValue || ''} ${config.prizeName || ''}`.trim()
-    : '💎 **Prize:** Mystery Prize';
-  
-  const prizeDesc = config.prizeDescription 
-    ? `\n📝 ${config.prizeDescription}`
-    : '';
-
-  // Format initial timer display
-  const minutes = Math.floor(timerSeconds / 60);
-  const seconds = timerSeconds % 60;
-  const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-
-  // Use provided display names (nicknames) or fallback to usernames
-  const p1Name = player1Name || config.player1.username;
-  const p2Name = player2Name || config.player2.username;
-
-  return new EmbedBuilder()
-    .setColor(0x00ff88)
-    .setTitle('🎮 Split & Steal - In Progress')
-    .setDescription(
-      `${prizeInfo}${prizeDesc}\n\n⏳ **${timeDisplay} remaining**`
-    )
-    .addFields(
-      {
-        name: `**${p1Name}** ⏳`,
-        value: '\u200B',
-        inline: true,
-      },
-      {
-        name: `**${p2Name}** ⏳`,
-        value: '\u200B',
-        inline: true,
-      }
-    )
-    .setFooter({ text: 'Synx Tournaments' })
-    .setTimestamp(new Date());
 }
 
 function createActionRow(gameId: string): ActionRowBuilder<ButtonBuilder> {
@@ -273,14 +230,15 @@ async function startLiveCountdown(
   // Get client for fetching channel/message
   const { client } = await import('../index.ts');
   
-  const interval = setInterval(async () => {
+  // 🚀 IMMEDIATE first update (no 1s wait!) - prevents flicker!
+  const doCountdownUpdate = async () => {
     try {
       // Get game from cache
       const game = gameCache.get(gameId);
       
       if (!game || game.status === 'completed' || game.status === 'cancelled') {
         // Game ended - clear this interval
-        clearInterval(interval);
+        clearInterval(activeIntervals.get(gameId));
         activeIntervals.delete(gameId);
         console.log(`⏱️ Stopped live countdown for game ${gameId} (game ended)`);
         return;
@@ -292,7 +250,7 @@ async function startLiveCountdown(
       
       if (timeRemaining <= 0) {
         // Time's up - clear interval (timer callback will handle results)
-        clearInterval(interval);
+        clearInterval(activeIntervals.get(gameId));
         activeIntervals.delete(gameId);
         console.log(`⏱️ Stopped live countdown for game ${gameId} (time up)`);
         return;
@@ -309,7 +267,6 @@ async function startLiveCountdown(
       const choiceCount = (game.choice1 ? 1 : 0) + (game.choice2 ? 1 : 0);
       
       // 🎨 ANIMATED COUNTDOWN - Last 30 seconds special effects!
-      const totalTimer = game.timerSeconds || 60;
       let embedColor = 0xffaa00; // Default orange
       let timerText = `⏳ **${timeDisplay} remaining**`;
       let progressBar = '';
@@ -341,13 +298,19 @@ async function startLiveCountdown(
         thumbnailUrl = 'https://media.giphy.com/media/j3gFfV7LHhUQU/giphy.gif'; // 💀 Skull/danger animation
       }
 
+      // 🎯 Build prize display - ONLY if prize exists, no "Mystery Prize"!
+      let prizeText = '';
+      if (game.prizeValue || game.prizeName) {
+        prizeText = `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || ''}`.trim();
+      }
+
       // Create updated embed with live timer (timer in content, not footer!)
       const liveEmbed = new EmbedBuilder()
         .setColor(embedColor)
         .setTitle('🎮 Split & Steal - In Progress')
         .setThumbnail(thumbnailUrl) // ✅ Animated GIF thumbnail!
         .setDescription(
-          `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}\n\n${timerText}`.trim()
+          `${prizeText}${prizeText ? '\n\n' : ''}${timerText}`.trim()
         )
         .addFields(
           {
@@ -380,7 +343,12 @@ async function startLiveCountdown(
     } catch (error) {
       console.error('Error in live countdown update:', error);
     }
-  }, 1000); // Update every 1 SECOND (live countdown!)
+  };
+
+  // 🚀 Run immediately FIRST, then set interval
+  await doCountdownUpdate();
+  
+  const interval = setInterval(doCountdownUpdate, 1000); // Then every 1s
 
   activeIntervals.set(gameId, interval);
   console.log(`⏱️ Live countdown started for game ${gameId} (updates every 1s)`);
