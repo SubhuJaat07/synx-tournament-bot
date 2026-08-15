@@ -101,10 +101,17 @@ export async function handleButtonInteraction(interaction: ButtonInteraction, cl
     
     // Check if player already chose (from cache) - ALLOW CHANGES!
     const existingChoice = isPlayer1 ? game.choice1 : game.choice2;
-    if (existingChoice) {
+    const isActualChange = existingChoice && existingChoice !== choice;
+    
+    if (isActualChange) {
       // Player is CHANGING their choice - add to history!
       console.log(`🔄 ${playerName} is changing choice from ${existingChoice} to ${choice}`);
+    } else if (existingChoice) {
+      // Same choice clicked again - IGNORE silently!
+      console.log(`⏭️ ${playerName} clicked same choice (${choice}) again - ignoring`);
+      return; // Don't record, don't update anything
     }
+    
     const updatedGame = await recordChoice(gameId, playerId, choice);
 
     if (!updatedGame) {
