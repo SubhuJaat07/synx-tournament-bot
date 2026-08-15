@@ -142,8 +142,8 @@ export async function handleSplitStealCommand(interaction: ChatInputCommandInter
 }
 
 function createGameEmbed(config: GameConfig, timerSeconds: number, resultMode: string): EmbedBuilder {
-  const prizeInfo = config.prizeName 
-    ? `\n💎 **Prize:** ${config.prizeName}${config.prizeValue ? ` (${config.prizeValue})` : ''}`
+  const prizeInfo = config.prizeName || config.prizeValue 
+    ? `\n💎 **Prize:** ${config.prizeValue || ''} ${config.prizeName || ''}`.trim()
     : '';
   
   const prizeDesc = config.prizeDescription 
@@ -282,9 +282,7 @@ async function startLiveCountdown(
         .setColor(0xffaa00)
         .setTitle('🎮 Split & Steal - In Progress')
         .setDescription(
-          `**Choices are being made...**\n\n` +
-          `💎 **Prize:** ${game.prizeName || 'Mystery Prize'}${game.prizeValue ? ` (${game.prizeValue})` : ''}\n\n` +
-          `---`
+          `💎 **Prize:** ${game.prizeValue || ''} ${game.prizeName || 'Mystery Prize'}`.trim()
         )
         .addFields(
           {
