@@ -61,13 +61,14 @@ export function calculateResultFromCache(game: CachedGame): GameResult {
         emoji: '🏆',
       };
     } else {
+      // P1 no choice, P2 chose SPLIT → Fair 50-50!
       return {
         winner_id: null,
         winner_username: null,
         result_type: 'no_choice_split',
-        player1_prize_share: 0,
-        player2_prize_share: 100,
-        description: `🤝 <@${game.playerId2}> chose to **SPLIT**, but <@${game.playerId1}> **didn't choose anything**.\n📦 <@${game.playerId2}> gets the full prize!`,
+        player1_prize_share: 50,
+        player2_prize_share: 50,
+        description: `🤝 <@${game.playerId2}> chose to **SPLIT**! Since <@${game.playerId1}> didn't respond, prize is split **50-50**!`,
         emoji: '🤝',
       };
     }
@@ -85,13 +86,14 @@ export function calculateResultFromCache(game: CachedGame): GameResult {
         emoji: '🏆',
       };
     } else {
+      // P1 chose SPLIT, P2 no choice → Fair 50-50!
       return {
         winner_id: null,
         winner_username: null,
         result_type: 'split_no_choice',
-        player1_prize_share: 100,
-        player2_prize_share: 0,
-        description: `🤝 <@${game.playerId1}> chose to **SPLIT**, but <@${game.playerId2}> **didn't choose anything**.\n📦 <@${game.playerId1}> gets the full prize!`,
+        player1_prize_share: 50,
+        player2_prize_share: 50,
+        description: `🤝 <@${game.playerId1}> chose to **SPLIT**! Since <@${game.playerId2}> didn't respond, prize is split **50-50**!`,
         emoji: '🤝',
       };
     }
@@ -318,13 +320,13 @@ function createAnnouncementMessageFromCache(game: CachedGame, result: GameResult
       return `🏆 **<@${game.playerId2}>** takes **${prizeDisplay}** by default!\n\n⚠️ **<@${game.playerId1}>** didn't choose anything - auto-forfeit!`;
     
     case 'no_choice_split':
-      return `🤝 **<@${game.playerId2}>** gets the full **${prizeDisplay}**!\n\n⚠️ **<@${game.playerId1}>** didn't choose anything - they chose SPLIT so you get it all by default!`;
+      return `🤝 **<@${game.playerId2}>** chose to **SPLIT**! Since <@${game.playerId1}> didn't respond...\n\n📦 **${prizeDisplay}** is split equally (**50-50**) between both players!`;
     
     case 'steal_no_choice':
       return `🏆 **<@${game.playerId1}>** takes **${prizeDisplay}** by default!\n\n⚠️ **<@${game.playerId2}>** didn't choose anything - auto-forfeit!`;
     
     case 'split_no_choice':
-      return `🤝 **<@${game.playerId1}>** gets the full **${prizeDisplay}**!\n\n⚠️ **<@${game.playerId2}>** didn't choose anything - they chose SPLIT so you get it all by default!`;
+      return `🤝 **<@${game.playerId1}>** chose to **SPLIT**! Since <@${game.playerId2}> didn't respond...\n\n📦 **${prizeDisplay}** is split equally (**50-50**) between both players!`;
     
     default:
       return `🎮 **Game Over!** Check the embed above for results.`;
