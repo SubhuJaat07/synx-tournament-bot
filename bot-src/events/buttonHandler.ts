@@ -90,15 +90,15 @@ export async function handleButtonInteraction(interaction: ButtonInteraction, cl
       return;
     }
 
+    // ⚡ Record choice to CACHE + async DB (non-blocking)
+    const choice = action as 'split' | 'steal';
+    
     // Check if player already chose (from cache) - ALLOW CHANGES!
     const existingChoice = isPlayer1 ? game.choice1 : game.choice2;
     if (existingChoice) {
       // Player is CHANGING their choice - add to history!
       console.log(`🔄 ${playerName} is changing choice from ${existingChoice} to ${choice}`);
     }
-
-    // ⚡ Record choice to CACHE + async DB (non-blocking)
-    const choice = action as 'split' | 'steal';
     const updatedGame = await recordChoice(gameId, playerId, choice);
 
     if (!updatedGame) {
