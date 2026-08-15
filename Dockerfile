@@ -14,8 +14,8 @@ ENV PORT=3000
 COPY bot-package.json ./package.json
 COPY bot-bun.lock ./bun.lock
 
-# Install dependencies
-RUN bun install --production=false
+# Install all dependencies (Bun doesn't support --production=false)
+RUN bun install
 
 # Copy source code (ROOT LEVEL)
 COPY bot-src/ ./src/
