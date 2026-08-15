@@ -207,7 +207,7 @@ export async function calculateAndShowResultsFromCache(
 }
 
 /**
- * Create results embed from cached data
+ * Create SIMPLE results embed from cached data
  */
 function createResultsEmbedFromCache(
   game: CachedGame,
@@ -215,10 +215,6 @@ function createResultsEmbedFromCache(
   result: GameResult,
   isTimerExpiry: boolean
 ): EmbedBuilder {
-  const prizeText = game.prizeName 
-    ? `**${game.prizeName}**${game.prizeValue ? ` (${game.prizeValue})` : ''}`
-    : '**Mystery Prize**';
-
   const p1ChoiceEmoji = game.choice1 === 'split' ? '🤝' : game.choice1 === 'steal' ? '💀' : '❓';
   const p2ChoiceEmoji = game.choice2 === 'split' ? '🤝' : game.choice2 === 'steal' ? '💀' : '❓';
   
@@ -229,126 +225,72 @@ function createResultsEmbedFromCache(
   let color: number;
   switch (result.result_type) {
     case 'split_split':
-      color = 0x00ff00; // Green for cooperation
+      color = 0x00ff00; // Green
       break;
     case 'steal_steal':
-      color = 0xff0000; // Red for mutual betrayal
+      color = 0xff0000; // Red
       break;
     case 'split_steal':
     case 'steal_split':
-      color = 0xffaa00; // Orange for betrayal
+      color = 0xffaa00; // Orange
       break;
     default:
-      color = 0x00ff88; // Default
+      color = 0x00ff88;
   }
 
+  // Build simple embed with ONLY essential info
   const embed = new EmbedBuilder()
     .setColor(color)
-    .setTitle(`${result.emoji} Split & Steal - RESULTS`)
-    .setDescription(result.description)
+    .setTitle(`${result.emoji} Game Over!`)
     .addFields(
       {
-        name: `💎 Prize`,
-        value: prizeText,
-        inline: false,
-      },
-      {
-        name: `👤 ${game.playerName1}'s Choice`,
+        name: `@${game.playerName1}`,
         value: p1ChoiceText,
         inline: true,
       },
       {
-        name: `👤 ${game.playerName2}'s Choice`,
+        name: `@${game.playerName2}`,
         value: p2ChoiceText,
         inline: true,
-      },
-      {
-        name: '📊 Prize Distribution',
-        value: 
-          `• <@${game.playerName1}>: **${result.player1_prize_share}%**\n` +
-          `• <@${game.playerName2}>: **${result.player2_prize_share}%**`,
-        inline: false,
       }
     );
 
-  // Add winner field if there's a winner
+  // Add winner field only if there's a winner
   if (result.winner_id) {
     embed.addFields({
       name: '🏆 Winner',
-      value: `<@${result.winner_username}> takes home the entire prize!`,
+      value: `@${result.winner_username} takes all!`,
       inline: false,
     });
   }
 
-  // Add timer info
-  embed.addFields({
-    name: '⏱️ Game Info',
-    value: 
-      `• **Duration:** ${game.timerSeconds} seconds\n` +
-      `• **Mode:** ${game.resultMode === 'both_clicked' ? '⚡ Both Click' : '🕐 Timer End'}\n` +
-      `• **End Reason:** ${isTimerExpiry ? '⏰ Time Expired' : '🎯 All Choices Made'}`,
-    inline: false,
-  });
-
-  // Add prize description if exists
-  if (game.prizeDescription) {
-    embed.addFields({
-      name: '📝 Prize Details',
-      value: game.prizeDescription,
-      inline: false,
-    });
-  }
-
-  embed
-    .setFooter({ text: 'Synx Tournaments © 2024 | Game Complete' })
+  embed.setFooter({ text: 'Synx Tournaments' })
     .setTimestamp(new Date());
 
   return embed;
 }
 
 /**
- * Create announcement message from cached data
+ * Create SIMPLE announcement message from cached data
  */
 function createAnnouncementMessageFromCache(game: CachedGame, result: GameResult): string {
   const prizeName = game.prizeName || 'the prize';
   
   switch (result.result_type) {
     case 'split_split':
-      return (
-        `🎉 **Split & Steal Result!**\n\n` +
-        `✅ <@${game.playerName1}> and <@${game.playerName2}> both chose to **SPLIT**!\n` +
-        `📦 **${prizeName}** has been divided equally (**50-50**) between both players!\n\n` +
-        `Congratulations to both players for their cooperation! 🤝`
-      );
+      return `🤝 **@${game.playerName1}** and **@${game.playerName2}** both chose to **SPLIT**!\n\n📦 **${prizeName}** has been divided equally (**50-50**) between both players!`;
     
     case 'steal_steal':
-      return (
-        `💥 **Split & Steal Result!**\n\n` +
-        `❌ <@${game.playerName1}> and <@${game.playerName2}> both tried to **STEAL**!\n` +
-        `😢 **Nobody wins ${prizeName}!** Both players leave empty-handed.\n\n` +
-        `Next time, maybe trust each other? 💔`
-      );
+      return `💀 Both **@${game.playerName1}** and **@${game.playerName2}** tried to **STEAL**!\n\n😢 **Nobody wins!** Both players were too greedy!\n\n💰 **${prizeName}** will be used in the next tournament!`;
     
     case 'split_steal':
-      return (
-        `🔪 **Split & Steal Result!**\n\n` +
-        `💀 <@${game.playerName1}> chose to **SPLIT**...\n` +
-        `💀 But <@${game.playerName2}> chose to **STEAL**!\n\n` +
-        `🏆 **<@${game.playerName2}> takes all of ${prizeName}!**\n\n` +
-        `A brutal betrayal! Better luck next time, <@${game.playerName1}>...`
-      );
+      return `🏆 **@${game.playerName2}** stole **${prizeName}**!\n\n💀 **@${game.playerName1}** chose to SPLIT but got betrayed!`;
     
     case 'steal_split':
-      return (
-        `🔪 **Split & Steal Result!**\n\n` +
-        `💀 <@${game.playerName2}> chose to **SPLIT**...\n` +
-        `💀 But <@${game.playerName1}> chose to **STEAL**!\n\n` +
-        `🏆 **<@${game.playerName1}> takes all of ${prizeName}!**\n\n` +
-        `A brutal betrayal! Better luck next time, <@${game.playerName2}>...`
-      );
+      return `🏆 **@${game.playerName1}** stole **${prizeName}**!\n\n💀 **@${game.playerName2}** chose to SPLIT but got betrayed!`;
     
     default:
-      return `🎮 **Split & Steal game completed!** Check above for results.`;
+      return `🎮 **Game Over!** Check the embed above for results.`;
   }
 }
 
