@@ -272,8 +272,8 @@ async function startLiveCountdown(
       let progressBar = '';
       let thumbnailUrl: string | null = null; // Animated GIF on RIGHT SIDE!
       
-      if (timeRemaining <= 30 && timeRemaining > 15) {
-        // ⏱️ Last 30s-16s - User's custom 30s countdown GIF on RIGHT!
+      if (timeRemaining <= 30 && timeRemaining > 10) {
+        // ⏱️ Last 30s-11s - User's custom 30s countdown GIF on RIGHT!
         embedColor = 0xffcc00;
         const progress = Math.floor((timeRemaining / 30) * 10);
         const filled = '█'.repeat(progress);
@@ -282,7 +282,7 @@ async function startLiveCountdown(
         timerText = `⚡ **${timeDisplay} remaining**${progressBar}`;
         // 🎬 User's 30-second countdown animation on RIGHT side!
         thumbnailUrl = 'https://media.giphy.com/media/hJwGeT4iFhGIPLNlbk/giphy.gif';
-      } else if (timeRemaining <= 15 && timeRemaining > 10) {
+      } else if (timeRemaining <= 10 && timeRemaining > 5) {
         // 🔥 Last 10s-6s - Red urgent + fire animation on RIGHT!
         embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xff3333;
         const progress = Math.floor((timeRemaining / 10) * 10);
@@ -309,25 +309,16 @@ async function startLiveCountdown(
         }
       }
 
+      // 👥 Player names in description (NO fields = NO blank lines!)
+      const playerLine = `👤 **${game.playerName1}** ${p1Status}  |  **${game.playerName2}** ${p2Status}`;
+
       // Create updated embed with live timer (timer in content, not footer!)
       const liveEmbed = new EmbedBuilder()
         .setColor(embedColor)
         .setTitle('🎮 Split & Steal - In Progress')
         .setThumbnail(thumbnailUrl) // ✅ Animated GIF thumbnail!
         .setDescription(
-          `${prizeText}${prizeText ? '\n\n' : ''}${timerText}`.trim()
-        )
-        .addFields(
-          {
-            name: `**${game.playerName1}** ${p1Status}`,
-            value: '\u200b', // Zero-width space (NO blank line!)
-            inline: true,
-          },
-          {
-            name: `**${game.playerName2}** ${p2Status}`,
-            value: '\u200b', // Zero-width space (NO blank line!)
-            inline: true,
-          }
+          `${prizeText}${prizeText ? '\n\n' : ''}${playerLine}\n\n${timerText}`.trim()
         )
         .setFooter({ text: 'Synx Tournaments' })
         .setTimestamp(new Date());

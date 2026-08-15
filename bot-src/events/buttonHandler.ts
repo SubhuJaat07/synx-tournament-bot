@@ -227,7 +227,7 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     let timerText = `⏳ **${timeDisplay} remaining**`;
     let thumbnailUrl: string | null = null;
     
-    if (timeRemaining <= 30 && timeRemaining > 15) {
+    if (timeRemaining <= 30 && timeRemaining > 10) {
       // ⏱️ Last 30s-16s - User's custom 30s countdown GIF on RIGHT!
       embedColor = 0xffcc00;
       const progress = Math.floor((timeRemaining / 30) * 10);
@@ -236,7 +236,7 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       timerText = `⚡ **${timeDisplay} remaining**\n\`${filled}${empty}\` **${timeRemaining}s**`;
       // 🎬 User's 30-second countdown animation on RIGHT side!
       thumbnailUrl = 'https://media.giphy.com/media/hJwGeT4iFhGIPLNlbk/giphy.gif';
-    } else if (timeRemaining <= 15 && timeRemaining > 10) {
+    } else if (timeRemaining <= 10 && timeRemaining > 5) {
       embedColor = 0xff0000;
       const progress = Math.floor((timeRemaining / 10) * 10);
       const filled = '🔴'.repeat(Math.ceil(progress / 2));
@@ -259,24 +259,15 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       }
     }
 
+    // 👥 Player names in description (NO fields = NO blank lines!)
+    const playerLine = `👤 **${game.playerName1}** ${p1Status}  |  **${game.playerName2}** ${p2Status}`;
+
     const embed = new EmbedBuilder()
       .setColor(embedColor)
       .setTitle('🎮 Split & Steal - In Progress')
       .setThumbnail(thumbnailUrl)
       .setDescription(
-        `${prizeText}${prizeText ? '\n\n' : ''}${timerText}`.trim()
-      )
-      .addFields(
-        {
-          name: `**${game.playerName1}** ${p1Status}`,
-          value: '\u200b', // Zero-width space (NO blank line!)
-          inline: true,
-        },
-        {
-          name: `**${game.playerName2}** ${p2Status}`,
-          value: '\u200b', // Zero-width space (NO blank line!)
-          inline: true,
-        }
+        `${prizeText}${prizeText ? '\n\n' : ''}${playerLine}\n\n${timerText}`.trim()
       )
       .setFooter({ text: 'Synx Tournaments' })
       .setTimestamp(new Date());
