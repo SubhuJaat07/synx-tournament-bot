@@ -168,10 +168,7 @@ function createGameEmbed(config: GameConfig, timerSeconds: number, resultMode: s
     .setTitle('🎮 Split & Steal Tournament')
     .setDescription(
       `**Choose your fate!**${prizeInfo}${prizeDesc}\n\n` +
-      `${modeText}\n\n` +
-      `---\n\n` +
-      `👤 **Player 1:** \`${config.player1.username}\`\n` +
-      `👤 **Player 2:** \`${config.player2.username}\``
+      `${modeText}`
     )
     .addFields(
       {
