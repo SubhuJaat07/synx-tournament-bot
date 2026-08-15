@@ -270,32 +270,33 @@ async function startLiveCountdown(
       let embedColor = 0xffaa00; // Default orange
       let timerText = `⏳ **${timeDisplay} remaining**`;
       let progressBar = '';
-      let thumbnailUrl: string | null = null; // Animated GIF for last 30s!
+      let thumbnailUrl: string | null = null; // Animated GIF on RIGHT SIDE!
       
       if (timeRemaining <= 30 && timeRemaining > 10) {
-        // ⚡ Last 30s - Yellow warning + progress bar + animated clock
+        // ⚡ Last 30s-11s - Yellow warning + progress bar + countdown GIF on RIGHT!
         embedColor = 0xffcc00;
         const progress = Math.floor((timeRemaining / 30) * 10);
         const filled = '█'.repeat(progress);
         const empty = '░'.repeat(10 - progress);
         progressBar = `\n\`${filled}${empty}\` **${timeRemaining}s**`;
         timerText = `⚡ **${timeDisplay} remaining**${progressBar}`;
-        thumbnailUrl = 'https://media.giphy.com/media/3o7TKMt1VVNkHV2PaU/giphy.gif'; // ⏰ Clock animation
+        // 🎬 30-second countdown animation on RIGHT side!
+        thumbnailUrl = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGZkdHJqOGt0dGs3b3BwZnQ5aGNkZjNqaWZyaHZlcHRnczR0YmpuZyZlcD12MV9pbnRlcm5hbF9naWQ/3o7TKMt1VVNkHV2PaU/giphy.gif';
       } else if (timeRemaining <= 10 && timeRemaining > 5) {
-        // 🔥 Last 10s - Red urgent + fire animation
+        // 🔥 Last 10s-6s - Red urgent + fire animation on RIGHT!
         embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xff3333;
         const progress = Math.floor((timeRemaining / 10) * 10);
         const filled = '🔴'.repeat(Math.ceil(progress / 2));
         const empty = '⬜'.repeat(5 - Math.ceil(progress / 2));
         progressBar = `\n${filled}${empty} **${timeRemaining}s**`;
         timerText = `🔥 **${timeDisplay} remaining**${progressBar}`;
-        thumbnailUrl = 'https://media.giphy.com/media/Xe7oPyvA6LvBNKbZoX/giphy.gif'; // 🔥 Fire animation
+        thumbnailUrl = 'https://media.giphy.com/media/Xe7oPyvA6LvBNKbZoX/giphy.gif'; // 🔥 Fire on RIGHT!
       } else if (timeRemaining <= 5) {
-        // 💀 Last 5s - Critical! Skull animation + flashing red
+        // 💀 Last 5s-1s - Critical! Skull/danger animation on RIGHT!
         embedColor = timeRemaining % 2 === 0 ? 0xff0000 : 0xaa0000;
         progressBar = `\n💀💀💀💀💀 **${timeRemaining}** 💀💀💀💀💀`;
         timerText = `⏰ **${timeDisplay}**${progressBar}`;
-        thumbnailUrl = 'https://media.giphy.com/media/j3gFfV7LHhUQU/giphy.gif'; // 💀 Skull/danger animation
+        thumbnailUrl = 'https://media.giphy.com/media/j3gFfV7LHhUQU/giphy.gif'; // 💀 Danger on RIGHT!
       }
 
       // 🎯 Build prize display - ONLY if prize exists, no "Mystery Prize"!

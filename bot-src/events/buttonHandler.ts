@@ -222,7 +222,7 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
     // Count how many choices recorded
     const choiceCount = (game.choice1 ? 1 : 0) + (game.choice2 ? 1 : 0);
     
-    // 🎨 Animated countdown for button handler too!
+    // 🎨 Animated countdown for button handler too - RIGHT SIDE GIF!
     let embedColor = 0xffaa00;
     let timerText = `⏳ **${timeDisplay} remaining**`;
     let thumbnailUrl: string | null = null;
@@ -233,18 +233,19 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       const filled = '█'.repeat(progress);
       const empty = '░'.repeat(10 - progress);
       timerText = `⚡ **${timeDisplay} remaining**\n\`${filled}${empty}\` **${timeRemaining}s**`;
-      thumbnailUrl = 'https://media.giphy.com/media/3o7TKMt1VVNkHV2PaU/giphy.gif';
+      // 🎬 Countdown animation on RIGHT side (thumbnail)!
+      thumbnailUrl = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGZkdHJqOGt0dGs3b3BwZnQ5aGNkZjNqaWZyaHZlcHRnczR0YmpuZyZlcD12MV9pbnRlcm5hbF9naWQ/3o7TKMt1VVNkHV2PaU/giphy.gif';
     } else if (timeRemaining <= 10 && timeRemaining > 5) {
       embedColor = 0xff0000;
       const progress = Math.floor((timeRemaining / 10) * 10);
       const filled = '🔴'.repeat(Math.ceil(progress / 2));
       const empty = '⬜'.repeat(5 - Math.ceil(progress / 2));
       timerText = `🔥 **${timeDisplay} remaining**\n${filled}${empty} **${timeRemaining}s**`;
-      thumbnailUrl = 'https://media.giphy.com/media/Xe7oPyvA6LvBNKbZoX/giphy.gif';
+      thumbnailUrl = 'https://media.giphy.com/media/Xe7oPyvA6LvBNKbZoX/giphy.gif'; // 🔥 Fire on RIGHT
     } else if (timeRemaining <= 5) {
       embedColor = 0xff0000;
       timerText = `⏰ **${timeDisplay}**\n💀💀💀💀💀 **${timeRemaining}** 💀💀💀💀💀`;
-      thumbnailUrl = 'https://media.giphy.com/media/j3gFfV7LHhUQU/giphy.gif';
+      thumbnailUrl = 'https://media.giphy.com/media/j3gFfV7LHhUQU/giphy.gif'; // 💀 Danger on RIGHT
     }
 
     // 🎯 Build prize display - ONLY if prize exists!
