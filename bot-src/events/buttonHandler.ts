@@ -224,11 +224,6 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
           name: '⏱️ Time Left',
           value: timeRemaining > 0 ? `⏳ **${timeDisplay}** remaining` : '⏰ **Time\'s up!**',
           inline: false,
-        },
-        {
-          name: '📊 Progress',
-          value: `${'🟩'.repeat(choiceCount)}${'⬜'.repeat(2 - choiceCount)} ${choiceCount}/2 chosen`,
-          inline: false,
         }
       )
       .setFooter({ text: 'Synx Tournaments' })

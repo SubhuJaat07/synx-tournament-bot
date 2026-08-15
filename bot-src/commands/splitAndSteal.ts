@@ -310,11 +310,6 @@ async function startLiveCountdown(
             name: '⏱️ Time Left',
             value: `⏳ **${timeDisplay}** remaining`,
             inline: false,
-          },
-          {
-            name: '📊 Progress',
-            value: `${'🟩'.repeat(choiceCount)}${'⬜'.repeat(2 - choiceCount)} ${choiceCount}/2 chosen`,
-            inline: false,
           }
         )
         .setFooter({ text: 'Synx Tournaments • Live countdown' })
