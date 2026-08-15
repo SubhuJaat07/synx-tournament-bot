@@ -177,15 +177,15 @@ export async function calculateAndShowResultsFromCache(
       ? interaction.message 
       : await interaction.fetchReply();
 
-    await message.edit({
+    const editedMessage = await message.edit({
       content: `${result.emoji} **GAME OVER!** ${isTimerExpiry ? '(Time\'s up!)' : ''}`,
       embeds: [embed],
       components: [], // Remove all buttons
     });
 
-    // Send announcement in channel
+    // Send announcement as REPLY to the result message!
     if (interaction.channel) {
-      await interaction.channel.send({
+      await editedMessage.reply({
         content: createAnnouncementMessageFromCache(game, result),
       });
     }
@@ -207,7 +207,7 @@ export async function calculateAndShowResultsFromCache(
 }
 
 /**
- * Create SIMPLE results embed from cached data
+ * Create results embed with CHOICE HISTORY TIMELINE!
  */
 function createResultsEmbedFromCache(
   game: CachedGame,
@@ -215,11 +215,16 @@ function createResultsEmbedFromCache(
   result: GameResult,
   isTimerExpiry: boolean
 ): EmbedBuilder {
-  const p1ChoiceEmoji = game.choice1 === 'split' ? '🤝' : game.choice1 === 'steal' ? '💀' : '❓';
-  const p2ChoiceEmoji = game.choice2 === 'split' ? '🤝' : game.choice2 === 'steal' ? '💀' : '❓';
+  const p1ChoiceEmoji = game.choice1 === 'split' ? '🤝' : game.choice1 === 'steal' ? '💀' : '⏰';
+  const p2ChoiceEmoji = game.choice2 === 'split' ? '🤝' : game.choice2 === 'steal' ? '💀' : '⏰';
   
-  const p1ChoiceText = game.choice1 ? `${p1ChoiceEmoji} **${game.choice1.toUpperCase()}**` : '❓ **No Choice**';
-  const p2ChoiceText = game.choice2 ? `${p2ChoiceEmoji} **${game.choice2.toUpperCase()}**` : '❓ **No Choice**';
+  // Show actual choice or "didn't choose"
+  const p1ChoiceText = game.choice1 
+    ? `${p1ChoiceEmoji} **${game.choice1.toUpperCase()}**` 
+    : '⏰ **Did not choose**';
+  const p2ChoiceText = game.choice2 
+    ? `${p2ChoiceEmoji} **${game.choice2.toUpperCase()}**` 
+    : '⏰ **Did not choose**';
 
   // Determine color based on result
   let color: number;
@@ -238,7 +243,17 @@ function createResultsEmbedFromCache(
       color = 0x00ff88;
   }
 
-  // Build simple embed with ONLY essential info
+  // Build choice history timeline string
+  let historyText = 'No changes';
+  if (game.choiceHistory && game.choiceHistory.length > 0) {
+    const timeline = game.choiceHistory.map((h, i) => {
+      const time = h.timestamp.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      return `${i + 1}. **@${h.playerName}** chose **${h.choice.toUpperCase()}** (${time})`;
+    });
+    historyText = timeline.join('\n');
+  }
+
+  // Build simple embed with choices + history
   const embed = new EmbedBuilder()
     .setColor(color)
     .setTitle(`${result.emoji} Game Over!`)
@@ -263,6 +278,13 @@ function createResultsEmbedFromCache(
       inline: false,
     });
   }
+
+  // Add choice history timeline
+  embed.addFields({
+    name: '📜 Choice Timeline',
+    value: historyText,
+    inline: false,
+  });
 
   embed.setFooter({ text: 'Synx Tournaments' })
     .setTimestamp(new Date());

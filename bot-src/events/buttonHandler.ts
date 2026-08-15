@@ -90,14 +90,11 @@ export async function handleButtonInteraction(interaction: ButtonInteraction, cl
       return;
     }
 
-    // Check if player already chose (from cache)
+    // Check if player already chose (from cache) - ALLOW CHANGES!
     const existingChoice = isPlayer1 ? game.choice1 : game.choice2;
     if (existingChoice) {
-      await interaction.followUp({ 
-        content: `⚠️ **${playerName}**, you've already chosen **${existingChoice.toUpperCase()}**!\nYou cannot change your choice.`, 
-        ephemeral: true 
-      });
-      return;
+      // Player is CHANGING their choice - add to history!
+      console.log(`🔄 ${playerName} is changing choice from ${existingChoice} to ${choice}`);
     }
 
     // ⚡ Record choice to CACHE + async DB (non-blocking)
@@ -114,9 +111,22 @@ export async function handleButtonInteraction(interaction: ButtonInteraction, cl
 
     console.log(`✅ ${playerName} chose ${choice.toUpperCase()} in game ${gameId}`);
 
+    // ⚡ Add to CHOICE HISTORY for timeline!
+    if (!updatedGame.choiceHistory) updatedGame.choiceHistory = [];
+    updatedGame.choiceHistory.push({
+      playerId,
+      playerName,
+      choice,
+      timestamp: new Date()
+    });
+    // Update cache with history
+    gameCache.set(updatedGame);
+
     // Send SECRET confirmation (DON'T reveal what they chose!)
     await interaction.followUp({
-      content: `✅ **${playerName}**, your choice has been recorded!\n🤫 Shh! Keep it secret until the game ends...`,
+      content: existingChoice 
+        ? `🔄 **${playerName}**, your choice has been **updated**!\n🤫 Still a secret...`
+        : `✅ **${playerName}**, your choice has been recorded!\n🤫 Shh! Keep it secret until the game ends...`,
       ephemeral: true
     });
 
@@ -173,13 +183,23 @@ export async function handleButtonInteraction(interaction: ButtonInteraction, cl
 }
 
 /**
- * Update embed with current game status (from cache)
+ * Update embed with current game status (from cache) - SECRET CHOICES!
  */
 async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame): Promise<void> {
   try {
-    // All data from cache - no DB calls!
-    const p1Status = game.choice1 ? `✅ Chose **${game.choice1.toUpperCase()}**` : '⏳ Waiting...';
-    const p2Status = game.choice2 ? `✅ Chose **${game.choice2.toUpperCase()}**` : '⏳ Waiting...';
+    // Calculate time remaining
+    const now = new Date();
+    const timeRemaining = Math.max(0, Math.floor((game.endsAt.getTime() - now.getTime()) / 1000));
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+    
+    // DON'T reveal choices! Just show if they chose or not
+    const p1Status = game.choice1 ? '✅ **Chosen!** 🤫' : '⏳ Waiting...';
+    const p2Status = game.choice2 ? '✅ **Chosen!** 🤫' : '⏳ Waiting...';
+
+    // Count how many choices recorded
+    const choiceCount = (game.choice1 ? 1 : 0) + (game.choice2 ? 1 : 0);
 
     const embed = new EmbedBuilder()
       .setColor(0xffaa00)
@@ -191,26 +211,27 @@ async function updateGameEmbed(interaction: ButtonInteraction, game: CachedGame)
       )
       .addFields(
         {
-          name: `👤 ${game.playerName1}`,
+          name: `👤 @${game.playerName1}`,
           value: p1Status,
           inline: true,
         },
         {
-          name: `👤 ${game.playerName2}`,
+          name: `👤 @${game.playerName2}`,
           value: p2Status,
           inline: true,
         },
         {
-          name: '⏳ Status',
-          value: game.resultMode === 'both_clicked' 
-            ? (game.choice1 && game.choice2 
-              ? '🎯 Both players chosen! Calculating...' 
-              : '⏳ Waiting for both players...')
-            : '⏱️ Timer counting down...',
+          name: '⏱️ Time Left',
+          value: timeRemaining > 0 ? `⏳ **${timeDisplay}** remaining` : '⏰ **Time\'s up!**',
+          inline: false,
+        },
+        {
+          name: '📊 Progress',
+          value: `${'🟩'.repeat(choiceCount)}${'⬜'.repeat(2 - choiceCount)} ${choiceCount}/2 chosen`,
           inline: false,
         }
       )
-      .setFooter({ text: 'Synx Tournaments © 2024' })
+      .setFooter({ text: 'Synx Tournaments' })
       .setTimestamp(new Date());
 
     // Update the original message
